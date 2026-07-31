@@ -1,0 +1,4 @@
+interface:
+  display_name: "bbbbb Notify"
+  short_description: "Set up or send one coding-agent update"
+  default_prompt: "Use $bbbbb-notify to set up safely if needed, then send the Activity or Attention update I request. Keep code, logs, credentials, and private URLs out of the notification."

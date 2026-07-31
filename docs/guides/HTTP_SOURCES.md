@@ -1,0 +1,75 @@
+# Use an HTTP Source
+
+Use HTTP for coding agents, webhooks, services, automation, scripts, or any tool that can make one HTTPS request. It is the default setup path and requires no permanent CLI.
+
+## Coding agent or computer
+
+1. Open bbbbb on iPhone and create the private inbox.
+2. On the sender, open `https://bbbbb.app/connect/` and name the Source.
+3. Approve its temporary QR or six-digit code on iPhone.
+4. Give the collected private link to the sender as `BBBBB_SOURCE_URL`.
+5. Send one real update, then confirm **2 · First real update received** in the app.
+
+No CLI, helper, or phone-to-computer copying is required. The browser keeps the private link in memory only and exposes it only through deliberate Copy or download actions.
+
+## Webhook or service
+
+1. In bbbbb, choose **Sources → Add Source → Webhook or service**.
+2. Name the Source and wait for **1 · Setup complete**.
+3. Use the eye, **Copy private link**, or **Share private link** to place it in:
+   - [macOS Keychain](MACOS.md#http--store-the-url-in-keychain)
+   - [Linux secret storage](LINUX.md#http--secret-service)
+   - [Windows DPAPI](WINDOWS.md#2-store-it-with-windows-dpapi)
+   - a service webhook field, configuration, secret store, database, or code
+4. Send one real update, then confirm **2 · First real update received**.
+
+The storage choice is yours, including config, database, or code. Anyone who reads the URL can send to that Source; replace it after unintended exposure.
+
+## Send
+
+An empty request creates a neutral `Activity · Update` event:
+
+```sh
+curl -fsS -X POST "$BBBBB_SOURCE_URL"
+```
+
+Form fields create a readable update:
+
+```sh
+curl -fsS -X POST "$BBBBB_SOURCE_URL" \
+  --data-urlencode "category=activity" \
+  --data-urlencode "label=Started" \
+  --data-urlencode "work=Nightly backup" \
+  --data-urlencode "message=Backup is running"
+```
+
+Categories are `activity` and `attention`; labels are user-defined.
+
+## Coding agents
+
+Keep the credential outside the conversation:
+
+1. Use **Connect** on the sender so the private link arrives on that computer.
+2. Store it as `BBBBB_SOURCE_URL` outside the conversation.
+3. Never paste the exact link into the prompt.
+4. Copy this prompt:
+
+> Use `BBBBB_SOURCE_URL` without printing or sharing it. Notify me when the task finishes. Send Attention only if I need to act. No progress updates.
+
+```sh
+curl -fsS -X POST "$BBBBB_SOURCE_URL"
+```
+
+No helper, skill, or CLI is required. This is prompt hygiene, not process isolation: an unrestricted shell agent can inspect its environment. Use a restricted injector or isolated sender for a stronger boundary.
+
+The temporary QR, code, and browser URL never contain the private Source link.
+
+## Move an existing Source
+
+Open an enabled HTTP Source in the app and choose **Move sending access**. Open the advanced access receiver on the destination, approve its temporary code, and confirm **Move access**. The destination receives one encrypted replacement; the old private link stops working. This path is not used for a new Source.
+
+## Recover
+
+- Missing update: open bbbbb and refresh.
+- Rejected request: check whether the Source is disabled or replaced.
+- Lost or exposed URL: replace the Source on iPhone and update the secret store.

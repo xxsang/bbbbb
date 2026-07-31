@@ -1,0 +1,44 @@
+{
+  "name": "@bbbbbapp/cli",
+  "version": "1.1.1",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "Apache-2.0",
+  "description": "Encrypted sender and command wrapper for bbbbb",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xxsang/bbbbb.git",
+    "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "dist/src"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    }
+  },
+  "bin": {
+    "bbbbb": "dist/src/index.js"
+  },
+  "scripts": {
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
+    "prepack": "npm run build --workspace @bbbbbapp/protocol && npm run build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "npm run build --workspace @bbbbbapp/protocol && tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@bbbbbapp/protocol": "1.1.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5"
+  }
+}

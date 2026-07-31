@@ -1,0 +1,34 @@
+{
+  "suite": "DHKEM-P256-HKDF-SHA256/HKDF-SHA256/AES-128-GCM",
+  "info": "bbbbb/protocol-2/event",
+  "recipient": {
+    "publicKey": "BOPacYsu-__TCQ9Cl1FRwYQpyAcfFJGDNtHJKAX9iy-_Mj_WFEsqP5tJKIY1CUqgbX5FcAB_zH8fmyOMoZii1eE",
+    "privateKey": "BJFWjL7RsUAhnHLEui2U9ZVoBZAS9iv2lR3JGq6_XqY"
+  },
+  "event": {
+    "version": 2,
+    "eventId": "018f6f18-7f2f-7d3d-a932-70a79fbe31a4",
+    "sourceId": "source_macbook_builds",
+    "source": "MacBook builds",
+    "sourceMethod": "cli",
+    "category": "activity",
+    "label": "Started",
+    "occurredAt": "2026-07-18T10:42:00Z",
+    "work": "Run release tests",
+    "message": "All 184 tests passed",
+    "details": {
+      "cached": false,
+      "commit": "abc1234",
+      "duration_minutes": 18
+    }
+  },
+  "envelope": {
+    "version": 2,
+    "eventId": "018f6f18-7f2f-7d3d-a932-70a79fbe31a4",
+    "inboxId": "inbox_primary",
+    "sourceId": "source_macbook_builds",
+    "suite": "DHKEM-P256-HKDF-SHA256/HKDF-SHA256/AES-128-GCM",
+    "enc": "BE7pINVfxL7Uqat4XHImWErjnQnL0Evmg7eUuYW0xK3z9OORHbAmsmSOW9a6AlTTsu7R0he9MsHOiStOgmBMK6Y",
+    "ciphertext": "6Dvk9rKBbBcc5W7y07_Jk_6Hu4vXEwJzTnSKtumFD3s3AkIz0_WYu7PnSEUSPSFxUUP-ZdVXqjtzgeAdwTrCTy1NwQ_p4RY9TmVd0aj9kzicGL8wPzBqQaCI4DjMwv7YLXcYT-gheDu_H0cttYjtDKWceOXsFk6YJAd7uVFeSjNZc5Y6g963_Y7IB-RiygOEeEKP9irG2w2Qph2ELkqSd5K9GGZkj01cgr9ppT_KonuCbDg3OEeOYnrjpkfx4rrlXp1icsHWkF3Khbd-SB3qCoHmWuwjfA08HGLRdoGYECyYWP6nWQndgey-iRa7JABLxbl0FjpnsaecvZ47rdIE0VRoJSBpZUSIHEm7bmuZX4HFvDsuYZPlMl6I_CWzahDO3FjWcU0rTmRh0EG7CIoLRUPi4WpVDYRNUaJSG4Zg9CSMgTMWIMN1z6m8nv8TXwnfxmx-CFWnjdSk5OsFlJvnu7q4Cgxe9GCo6iqMnA"
+  }
+}

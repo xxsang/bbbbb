@@ -1,0 +1,36 @@
+{
+  "name": "@bbbbbapp/relay",
+  "version": "1.1.0",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "Apache-2.0",
+  "description": "Encrypted Cloudflare relay for bbbbb",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xxsang/bbbbb.git",
+    "directory": "services/relay"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "src",
+    "migrations",
+    "worker-configuration.d.ts",
+    "wrangler.jsonc"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "npm run build --workspace @bbbbbapp/protocol && tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@bbbbbapp/protocol": "1.1.0"
+  },
+  "devDependencies": {
+    "@bbbbbapp/cli": "1.1.1"
+  }
+}

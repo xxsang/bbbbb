@@ -1,0 +1,34 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "bbbbb-relay",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": false
+    },
+    "traces": {
+      "enabled": false
+    }
+  },
+  "env": {
+    "v11": {
+      "name": "bbbbb-relay-v11-local",
+      "vars": {
+        "WEBSITE_ORIGIN": "http://127.0.0.1:4173"
+      },
+      "d1_databases": [
+        {
+          "binding": "M2_EVENTS",
+          "database_name": "bbbbb-relay-v11-local",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}
