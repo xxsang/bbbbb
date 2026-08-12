@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "dbde4d7b3f0ca402c836f16c40018ae6935303ca8578c79f585da42fc9588018",
+  "treeSha256": "7924e86e329aae40cdf0700233525c10a0a4246220889f358ad18a09b98e8eb7",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -108,11 +108,11 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "09282479894aeb29a34b8a07279be00d47ec5ebd0f8e5c1dcc577196e0e855b9"
+      "sha256": "92d85948674d36ad31607b8cfbd4b1339242c77d76bb50c79a2232d65a78fc61"
     },
     {
       "path": "package.json",
-      "sha256": "ba7fdb2fe10d689975ae769b1f00d7196c3bf7b70020269e8367150d35625af9"
+      "sha256": "5638b1aa35bdae37d94f5840a67a3813796cfa475ac7db4b2e8810c48cee6d24"
     },
     {
       "path": "packages/cli/LICENSE",
@@ -260,7 +260,7 @@
     },
     {
       "path": "scripts/public-core-package.json",
-      "sha256": "ba7fdb2fe10d689975ae769b1f00d7196c3bf7b70020269e8367150d35625af9"
+      "sha256": "5638b1aa35bdae37d94f5840a67a3813796cfa475ac7db4b2e8810c48cee6d24"
     },
     {
       "path": "scripts/public-core-README.md",
