@@ -15,12 +15,12 @@ trap cleanup EXIT
 
 if [ -e "$root/LICENSE" ]; then
   cmp "$root/scripts/public-core-LICENSE" "$root/LICENSE"
-  if [ "$(git -C "$root" rev-parse --show-toplevel 2>/dev/null || true)" = "$root" ] && git -C "$root" ls-files | grep -Eq '(^|/)(node_modules|dist|\.build|\.wrangler|coverage)(/|$)|(^|/)\.dev\.vars$'; then
+  if [ "$(git -C "$root" rev-parse --show-toplevel 2>/dev/null || true)" = "$root" ] && git -C "$root" ls-files | grep -Eq '(^|/)(node_modules|dist|\.artifacts|\.build|\.wrangler|coverage)(/|$)|(^|/)\.dev\.vars$'; then
     echo "public repository tracks local or build output" >&2
     exit 1
   fi
   mkdir -p "$temporary/current"
-  rsync -a --exclude .git --exclude node_modules --exclude dist --exclude .build --exclude .wrangler --exclude coverage --exclude .dev.vars "$root/" "$temporary/current/"
+  rsync -a --exclude .git --exclude node_modules --exclude dist --exclude .artifacts --exclude .build --exclude .wrangler --exclude coverage --exclude .dev.vars "$root/" "$temporary/current/"
   node "$root/scripts/verify-public-core.mjs" "$temporary/current"
   candidate="$root"
 else

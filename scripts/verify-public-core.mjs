@@ -38,7 +38,7 @@ for (const path of paths) {
   if (["scripts/export-public-core.sh", "scripts/export-public-design.mjs"].includes(path)) throw new Error(`private repository export utility included: ${path}`);
   if (["services/relay/src/v11c-proof-worker.ts", "services/relay/wrangler.v11c.jsonc", "services/relay/src/v13-d1-benchmark-worker.ts", "services/relay/wrangler.v13-benchmark.jsonc"].includes(path)) throw new Error(`development proof artifact included: ${path}`);
   if (/(^|\/)[^/]*\.owner\.[^/]*$/u.test(path)) throw new Error(`owner-only file exported: ${path}`);
-  if (/(^|\/)(node_modules|dist|\.build|\.wrangler|coverage)(\/|$)/u.test(path) || /(^|\/)\.dev\.vars$/u.test(path)) throw new Error(`local build output exported: ${path}`);
+  if (/(^|\/)(node_modules|dist|\.artifacts|\.build|\.wrangler|coverage)(\/|$)/u.test(path) || /(^|\/)\.dev\.vars$/u.test(path)) throw new Error(`local build output exported: ${path}`);
   if (/migrations\/000[123]_/u.test(path) || /(?:protocol|pairing)-v1/u.test(path)) throw new Error(`protocol-1 compatibility file exported: ${path}`);
 }
 const readable = files.filter((path) => !path.endsWith("PUBLIC_CORE_MANIFEST.json"));

@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "3e2d08c2c8eeb53b5a82ba4ec74e7710d00251672a27f9a45a47c7141cae4e00",
+  "treeSha256": "86f9fb8c56b8d19a6a6930c875de42931d209e88c59ce62442f3c767dc789915",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -240,7 +240,7 @@
     },
     {
       "path": "scripts/check-public-core.sh",
-      "sha256": "e0753838fc5fd2b56980b9d85068e89c05e886a8ccff1506d0732502f5a3a90c"
+      "sha256": "a507514dc70efc08665e2ea33c766285a09915ddf23f6d035dbbb8a6a54c8efd"
     },
     {
       "path": "scripts/create-export-manifest.mjs",
@@ -304,7 +304,7 @@
     },
     {
       "path": "scripts/verify-public-core.mjs",
-      "sha256": "b65f3252a6e396de759a4cff7fb16fef77727da718333e995fc6f550aa7c785d"
+      "sha256": "b43bca10f78c6062f97bd9662f7bb3d741ead5c80017fe9139d94bc1eb61c062"
     },
     {
       "path": "SECURITY.md",
