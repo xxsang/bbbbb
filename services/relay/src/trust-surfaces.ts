@@ -36,11 +36,12 @@ const pages: Readonly<Record<string, TrustPage>> = {
 <p>Email <a href="mailto:${contactEmail}">${contactEmail}</a>. Include the app version, relay version from <a href="/health">/health</a>, approximate time, attempted operation, and whether opening or refreshing the app recovered the event.</p>
 <p>Never send work or message content, Source URLs, Source profiles, QR images, pairing codes, inbox credentials, device tokens, APNs credentials, full encrypted envelopes, or other secrets.</p>
 <h2>Supported flow</h2>
-<p>Support covers phone-approved HTTP and CLI Sources, encrypted retention, generic alerts, foreground or manual recovery, Source lifecycle controls, and local triage for one private inbox and one receiving iPhone.</p>
+<p>Support covers phone-approved HTTP and CLI Sources, encrypted retention, generic alerts, automatic or manual offline catch-up, Source lifecycle controls, and local triage for one private inbox and one receiving iPhone.</p>
 <h2>Known limits</h2>
 <ul>
-  <li>Hosted history is limited to the newest 100 encrypted events for up to seven days.</li>
-  <li>Notifications are generic; opening the app recovers accepted retained activity.</li>
+  <li>Free offline catch-up covers up to the newest 100 encrypted updates retained for seven days. Plus covers up to 500 retained for 30 days.</li>
+  <li>Notifications are generic. Opening the app checks for retained updates automatically; Plan &amp; Usage also provides <strong>Check now</strong>.</li>
+  <li>Offline catch-up does not restore an update deleted on the iPhone and does not transfer an Inbox to another phone.</li>
   <li>Each Source has independent write access and can be disabled, replaced, or deleted from the iPhone.</li>
   <li>bbbbb has no account, web inbox, remote execution, live monitoring, or approval actions.</li>
 </ul>`,
@@ -54,7 +55,7 @@ const pages: Readonly<Record<string, TrustPage>> = {
 <p>bbbbb protects Activity and Attention content for one private iPhone inbox. CLI Sources encrypt before transmission. HTTP Source content is normalized and sealed inside the Worker before retention. The official relay retains only protocol-2 encrypted envelopes and cannot decrypt them. Notifications contain no work, message, category, or label details.</p>
 <h2>Data processed</h2>
 <ul>
-  <li><strong>Encrypted event envelopes:</strong> retained in Cloudflare D1 for at most seven days and the newest 100 events per inbox, then removed by bounded cleanup.</li>
+  <li><strong>Encrypted event envelopes:</strong> Cloudflare D1 retains up to the newest 100 per Free inbox for at most seven days and up to 500 per Plus inbox for at most 30 days. Bounded cleanup removes older envelopes.</li>
   <li><strong>Alert delivery data:</strong> an APNs device token and environment are stored until replacement or hosted deletion. Apple processes the device token and generic notification to deliver an alert.</li>
   <li><strong>Service and abuse metadata:</strong> Cloudflare and the relay process request timing, IP and network metadata, ciphertext sizes, counts, retention timestamps, bounded hashed rate-limit keys, and allowlisted operational classifications needed to operate and protect the service.</li>
   <li><strong>Add Source metadata:</strong> five-minute session state, Source name and method, public encryption key, credential hashes, and approval timing are processed to create independently revocable Sources.</li>
@@ -62,7 +63,7 @@ const pages: Readonly<Record<string, TrustPage>> = {
 </ul>
 <p>Data is used only for app functionality, delivery, security, abuse prevention, and service reliability. bbbbb has no advertising, cross-company tracking, third-party analytics SDK, account profile, contacts access, or location access.</p>
 <h2>Data on your iPhone and computers</h2>
-<p>The iPhone stores private inbox authority in device-only Keychain storage and decrypted activity in protected app storage. A CLI Source stores only the inbox public key, fixed Source identity, and its independent write credential in an owner-only profile. An HTTP Source URL contains only that Source’s write credential. Local resolution state is not sent to the relay.</p>
+<p>The iPhone stores private inbox authority in device-only Keychain storage and decrypted activity in protected app storage. Individually deleted updates remain only in local Recently Deleted for up to 30 days unless restored or deleted immediately. A CLI Source stores only the inbox public key, fixed Source identity, and its independent write credential in an owner-only profile. An HTTP Source URL contains only that Source’s write credential. Local resolution and deletion state are not sent to the relay.</p>
 <h2>Trust and recovery limits</h2>
 <p>A Source can submit only to its assigned inbox and cannot read or decrypt history. Replacing a Source credential stops the old credential; disabling or deleting a Source stops new writes without rewriting retained history. Losing the iPhone’s private inbox key makes retained activity unrecoverable.</p>
 <h2>Deletion</h2>
@@ -76,6 +77,12 @@ const pages: Readonly<Record<string, TrustPage>> = {
     cacheControl: "public, max-age=300",
     body: `
 <p>bbbbb has no user account. The app provides two separate deletion controls in Settings.</p>
+<h2>Recover an individually deleted update</h2>
+<ol>
+  <li>Open Settings. <strong>Recently Deleted</strong> appears only when it contains an update.</li>
+  <li>Open Recently Deleted and choose <strong>Restore</strong> within 30 days.</li>
+</ol>
+<p>Individual deletion removes an update immediately from Attention, Activity, search, and exports. <strong>Delete Now</strong> or <strong>Delete All Now</strong> removes the local recovery copy immediately and cannot be undone. Offline catch-up does not restore locally deleted updates.</p>
 <h2>Delete hosted encrypted history and stop alerts</h2>
 <ol>
   <li>Open bbbbb on the paired iPhone and unlock it.</li>
@@ -88,7 +95,7 @@ const pages: Readonly<Record<string, TrustPage>> = {
   <li>Open Settings and choose <strong>Delete local history</strong>.</li>
   <li>Confirm the local deletion.</li>
 </ol>
-<p>This removes decrypted history, local resolution metadata, private inbox authority, and relay preference from that iPhone. It does not delete hosted encrypted history or stop alerts unless the hosted operation above is completed first.</p>
+<p>This removes decrypted history, Recently Deleted recovery copies, local resolution and deletion metadata, private inbox authority, and relay preference from that iPhone. It does not delete hosted encrypted history or stop alerts unless the hosted operation above is completed first.</p>
 <p>Uninstalling the app alone is not presented as a reliable way to delete a Keychain item. For help, email <a href="mailto:${contactEmail}">${contactEmail}</a> without sending a Source URL, profile, QR image, code, token, credential, or private work content.</p>`,
   },
   "/status": {

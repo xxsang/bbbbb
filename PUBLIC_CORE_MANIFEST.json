@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "7924e86e329aae40cdf0700233525c10a0a4246220889f358ad18a09b98e8eb7",
+  "treeSha256": "3e2d08c2c8eeb53b5a82ba4ec74e7710d00251672a27f9a45a47c7141cae4e00",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -20,7 +20,7 @@
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "23ba2bc1c84d159c7f2b2c094e6a5844c0593a83c6e10be02102f680f9d92d01"
+      "sha256": "0799dffe2f0acb7326350cc6495375c34e84c29a87213d2eea464bac369423ea"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -40,7 +40,7 @@
     },
     {
       "path": "docs/guides/API.md",
-      "sha256": "8266236390a26fb6f81553f04248c5bc85f89dff26eb1f087bd3f69281ae3f88"
+      "sha256": "6ee727cc409eca3eaa58c0825e900084a791224025e49c947360b628bca3ac8a"
     },
     {
       "path": "docs/guides/CLI_SOURCES.md",
@@ -68,7 +68,7 @@
     },
     {
       "path": "docs/guides/SELF_HOSTING.md",
-      "sha256": "8eb7e2eb65562bce8a0a02e4e54026d268b57f5eb9740f32985b079c2167724a"
+      "sha256": "e5eeb50bde8d69bce74e19c03e8c317a9acb423a775939b8bc24c9b2b93586b6"
     },
     {
       "path": "docs/guides/UPGRADING.md",
@@ -84,15 +84,15 @@
     },
     {
       "path": "docs/launch/OPERATIONS.md",
-      "sha256": "13843ae34eaf31fa9b7bc10de248023e5a19f759f8166cfc476f86f7e865d0ef"
+      "sha256": "54c5686adda3a0094e8f83af2e16b38891308def1153128e5de4a9c6c8936893"
     },
     {
       "path": "docs/launch/TRUST.md",
-      "sha256": "dfb156f5b3b97e41de6c7242baefc52afce266557df653579035ba40f233e304"
+      "sha256": "04e447083e9e8166691cffc731956541893051e3ec43948b7be177ff03f45488"
     },
     {
       "path": "docs/launch/VERSIONING.md",
-      "sha256": "bed25d217002ae8f9b097e1d4ac52a4531e19d4056b95a3431693b37cb8d7e92"
+      "sha256": "5a759e342ca21dee4ef4abe718bfb7eb289fa644441d98c17b6ee39193b77d16"
     },
     {
       "path": "examples/coding-agent/completion-hook.sh",
@@ -108,11 +108,11 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "92d85948674d36ad31607b8cfbd4b1339242c77d76bb50c79a2232d65a78fc61"
+      "sha256": "3672a546d9f63e81cdf0d157e2fffdc784286894912a552a9e22b5ecb901904e"
     },
     {
       "path": "package.json",
-      "sha256": "5638b1aa35bdae37d94f5840a67a3813796cfa475ac7db4b2e8810c48cee6d24"
+      "sha256": "b96da2f7422a006ee72ea3fb6e547c6c91b366f981ac3b2a9c9a4ea12798df15"
     },
     {
       "path": "packages/cli/LICENSE",
@@ -120,7 +120,7 @@
     },
     {
       "path": "packages/cli/package.json",
-      "sha256": "3a5e63f0b02930e6df79d95f004ae45d7dc5a562887d0da6597ec2fd38849ed6"
+      "sha256": "8efbeae544ea6607686840f87becb844b811c53d0ed02ede8485119dbda8d28e"
     },
     {
       "path": "packages/cli/README.md",
@@ -140,7 +140,7 @@
     },
     {
       "path": "packages/cli/src/index.ts",
-      "sha256": "ff57373cfe30897f278539db1dad501b27ac55b772e3c7ba80946f56ee373d73"
+      "sha256": "ed10e4c99eb617e2dbc34e96982b68c67e7a4948ac23c118e24e37011d506d8d"
     },
     {
       "path": "packages/cli/src/source-profile.ts",
@@ -168,7 +168,7 @@
     },
     {
       "path": "packages/cli/test/v2-commands.test.ts",
-      "sha256": "218bce687fc0229fa4b8b9163a15b4a722457498e6a4166eefe23d7eb5ed950a"
+      "sha256": "49071bab28e55f975c1176225ee80e6f6e099a37a29f4d6f914a83dbf1aa3021"
     },
     {
       "path": "packages/cli/tsconfig.json",
@@ -184,11 +184,11 @@
     },
     {
       "path": "packages/protocol/package.json",
-      "sha256": "b67b4110d16367ba9153ca4ce0e8d4b7be0ec80361de3b49c9700a6fc3dc7352"
+      "sha256": "e3495fa64a6ed4c1fb0effd15ba29327f4c1d19ae4d9a9f7ebaf2ae57777064c"
     },
     {
       "path": "packages/protocol/README.md",
-      "sha256": "177458ede81c66f77c533ed5e965611b612f62cf84e6ba440959aaf494cf2ef7"
+      "sha256": "18b66179b9a6c289eb7860b9b458daf0dac3a5d3f9eebdee7edd7b305b8acf40"
     },
     {
       "path": "packages/protocol/src/base64url.ts",
@@ -196,7 +196,7 @@
     },
     {
       "path": "packages/protocol/src/index.ts",
-      "sha256": "8138e796cc48b06de7802fb6104bb3f0a39303ae1cd8deb7a45ae69e22549c1c"
+      "sha256": "27cb46ac875dbc39d6bf64bf43579d610ce464baa4870283894389420766de53"
     },
     {
       "path": "packages/protocol/src/relay-url.ts",
@@ -207,6 +207,10 @@
       "sha256": "06a94369bbf8ed344195de754e98f8de290ecea1ff206e91d51c9a81e65c763c"
     },
     {
+      "path": "packages/protocol/src/v2-entitlement.ts",
+      "sha256": "6b3a5ca1830832358ec6437fc7b14ebef9c8b1963fef561b6c2ee8681f7a6275"
+    },
+    {
       "path": "packages/protocol/src/v2-hpke.ts",
       "sha256": "d7d495b7f90f65f3b844d7fe4995c23bb166139cb9cb6f0cb46f18f2fefd7b29"
     },
@@ -215,8 +219,12 @@
       "sha256": "62d0570915cbab75429e41407cc705167af19941c2afff3a556672ec0969d23a"
     },
     {
+      "path": "packages/protocol/src/v2-usage.ts",
+      "sha256": "32cd22d6d61e1cef8fd2870ef4b3955c30098e7e27f34f327fcd3a117b30367b"
+    },
+    {
       "path": "packages/protocol/test/v2.test.ts",
-      "sha256": "1d92ce7381029ae69aa38a969eb8ef5f9fdb5247861d6c4201e0e28c0115206e"
+      "sha256": "ce251fe60cb2c94d4fce5461d8b4897b91af09f899c915ff8df407ee44f4782b"
     },
     {
       "path": "packages/protocol/tsconfig.json",
@@ -224,11 +232,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "6676f7f7f31f82d3ce414a1fff98cbf33d87f424c7bb74d9e8125d18c17e7b52"
+      "sha256": "d1db0d12e28aa27c3bf06708ac4e0d938c905f39eda66666beb3fdb4ad607a4b"
     },
     {
       "path": "release/version.json",
-      "sha256": "8232bcf8e414ea0d427642bb69d888e2814ae468bb0096e8d7a878639f1ebad9"
+      "sha256": "2506c3f352f35217b863357e8c952be5dbe7f7fb12f0caa38cc01cc178213714"
     },
     {
       "path": "scripts/check-public-core.sh",
@@ -260,11 +268,15 @@
     },
     {
       "path": "scripts/public-core-package.json",
-      "sha256": "5638b1aa35bdae37d94f5840a67a3813796cfa475ac7db4b2e8810c48cee6d24"
+      "sha256": "b96da2f7422a006ee72ea3fb6e547c6c91b366f981ac3b2a9c9a4ea12798df15"
     },
     {
       "path": "scripts/public-core-README.md",
-      "sha256": "6676f7f7f31f82d3ce414a1fff98cbf33d87f424c7bb74d9e8125d18c17e7b52"
+      "sha256": "d1db0d12e28aa27c3bf06708ac4e0d938c905f39eda66666beb3fdb4ad607a4b"
+    },
+    {
+      "path": "scripts/public-credential-scan.mjs",
+      "sha256": "fdadf20c1fbab5dc218b0ceef268b5f2c4101e817c676cbc78569edbe3a517aa"
     },
     {
       "path": "scripts/release/build-cli-distributions.mjs",
@@ -280,7 +292,7 @@
     },
     {
       "path": "scripts/release/validate-npm-pack.mjs",
-      "sha256": "b3cd8b101f8349c6f3f6cf41af238980e4174517ccff5fd80df95b4f7388eaa7"
+      "sha256": "e938643ead70132abb9c6ea9b3a98819832d3cece3ccd7d7c2cbd8110dc275d8"
     },
     {
       "path": "scripts/release/version-contract.mjs",
@@ -288,11 +300,11 @@
     },
     {
       "path": "scripts/runtime-license-inventory.mjs",
-      "sha256": "4e25bec471b4bda47ef048659832b4924a4424a2ff0d7143fcf9d8d25d737f84"
+      "sha256": "32bf121074ea42ca7ccb59a39f3303b685116012731095db6406780633b8674a"
     },
     {
       "path": "scripts/verify-public-core.mjs",
-      "sha256": "f17218b56ebbe61a304af59b430201fd7dd3b3aa479a51ac84a55990b4dcb6cc"
+      "sha256": "b65f3252a6e396de759a4cff7fb16fef77727da718333e995fc6f550aa7c785d"
     },
     {
       "path": "SECURITY.md",
@@ -315,12 +327,28 @@
       "sha256": "54279e591b24002166d0bd9fe3870ff642a68a0391ae7ed9d239b3e8d75ba201"
     },
     {
+      "path": "services/relay/migrations/0007_v13_inbox_usage.sql",
+      "sha256": "fa7e4cc27908e1d26a69bd74a4e224830792c4a2b299a3036a78f3803dc85640"
+    },
+    {
+      "path": "services/relay/migrations/0008_v13_entitlements.sql",
+      "sha256": "f0675af0d236509d9059f514583196fac34d498565b19b28364542b9d9451284"
+    },
+    {
+      "path": "services/relay/migrations/0009_v13_app_store_notifications.sql",
+      "sha256": "fa88daa6b6bc0bfc83bc492fcf987b3479300d419b6e5ddcd7b4b487e914c228"
+    },
+    {
+      "path": "services/relay/migrations/0010_v13_remove_daily_quota.sql",
+      "sha256": "aa43acaee9e3ac372340ad9d2802193ebd9b6e9a08d2f1c4d6a35c6e9e2e3d51"
+    },
+    {
       "path": "services/relay/package.json",
-      "sha256": "bcdae305755bfd348f5dd1cb0496d207315a739607b14f1b10b3a55fcb00a4ad"
+      "sha256": "c9bc7bd36dbb300f0120c3c28ea71592293a961d44b006527f66a1dc22e7ea1e"
     },
     {
       "path": "services/relay/README.md",
-      "sha256": "d552a18cf14016410bd365860cb1f8cdef8acc92b3aeec51d7cd9ed32f2f7aab"
+      "sha256": "59476946b9e6d41a6cfcbccd88a94599d99563ff66ef2c7db741cb2aacca1799"
     },
     {
       "path": "services/relay/src/apns/base64url.ts",
@@ -344,15 +372,23 @@
     },
     {
       "path": "services/relay/src/index.ts",
-      "sha256": "d8faacd2c69528a9739c8e24f3417d377f816ba203f7b837704a4bd5dd0f756a"
+      "sha256": "27ad371dd22cf59492d3a951742ea283342b0ed7563c007a7ec50afebfc5e4f4"
     },
     {
       "path": "services/relay/src/trust-surfaces.ts",
-      "sha256": "7122abbb073e5d89da21b87ee8e6fa43fea7852f6e6a2f2fed2232e8fd69342c"
+      "sha256": "8644fef0a87e9fc3d04c482c1ef34714b418c802cbc099d1296725548e3943fc"
+    },
+    {
+      "path": "services/relay/src/v2/apple-root-certificates.ts",
+      "sha256": "90812143b66a94de461616c2d329dc504b0371f5ab29805bbd45043c8b2c7d2b"
+    },
+    {
+      "path": "services/relay/src/v2/apple-store-verifier.ts",
+      "sha256": "bcf40171ddcb2a6c2432a9fdd9574c456d97122e296bc2f32d1dbd4ca4067084"
     },
     {
       "path": "services/relay/src/v2/d1-source-store.ts",
-      "sha256": "13425e26352bc431db0caf2f6966042084293b09a59cd80f3b481eadd442774f"
+      "sha256": "7b0eccad5707767ef048cbee64bbb282db2e50a8225699f3f85f13f5293e5403"
     },
     {
       "path": "services/relay/src/v2/device-store.ts",
@@ -360,11 +396,11 @@
     },
     {
       "path": "services/relay/src/v2/http-source-handler.ts",
-      "sha256": "218f50805a564cdc012f4af8fa53f0da6ee53c3b3f4e84436d53f8e0876f3c86"
+      "sha256": "5e89ed75c4596e387e171166fafb26c47b04279fd561bf51e0f605856870e11c"
     },
     {
       "path": "services/relay/src/v2/memory-source-store.ts",
-      "sha256": "3a18ebc9b4d48d37d5bf1abf4a1a03bc5ca1787a4d45a12d8e1b64107b13dcf8"
+      "sha256": "8134526911a2c33e3ca0441ce2bc675fe4aedde36d6a41744fad399d837af78b"
     },
     {
       "path": "services/relay/src/v2/proof-store.ts",
@@ -372,7 +408,7 @@
     },
     {
       "path": "services/relay/src/v2/source-store.ts",
-      "sha256": "a3f14c67f45d5e0f9b118ae5c54d45cd3c50ff8b6f599d1c40825a6ccd86691d"
+      "sha256": "381eef903ac71109770c06726e3e6cb6b9120b2a150f511659be3fb190a7cd69"
     },
     {
       "path": "services/relay/src/v2/source-transfer-crypto.ts",
@@ -383,8 +419,12 @@
       "sha256": "0158b14f7efbe33a07456ba15103eb57d247b7273451675a400b57abbaac6dc6"
     },
     {
+      "path": "services/relay/test/apple-store-verifier.test.ts",
+      "sha256": "5fbedfe5b2fd27e3efdfe84b4d2f1857f0e3292749cd40e0374c81573c8b28ed"
+    },
+    {
       "path": "services/relay/test/index.test.ts",
-      "sha256": "3c5dff8871e8626f93fd123d51b5f93af25b11201c0839fce62a85500999635a"
+      "sha256": "585db44dcb2a552aaf61b6a73a355e69bd390065da4def16bcb3a50f6dd04e93"
     },
     {
       "path": "services/relay/test/provider-token.test.ts",
@@ -395,8 +435,20 @@
       "sha256": "51f57f5b64da88415c77f057643c1f048bae6d95c5a770e1a7aadd8a6e8682c5"
     },
     {
+      "path": "services/relay/test/v13-d1-quota.test.ts",
+      "sha256": "b214ac094c2178f710f256de5fc0beb7a5e701c1920e4abc515920f03d946a24"
+    },
+    {
+      "path": "services/relay/test/v13-entitlement-store.test.ts",
+      "sha256": "b256de9fad18027f868dad81b53e32af5d3993385058663d7ed83bff5e8e8930"
+    },
+    {
+      "path": "services/relay/test/v13-quota-store.test.ts",
+      "sha256": "cdd2be0b8e78a24d64dd0c75d3cb6ae2db708887819b3e2c05b967f0707ba5fc"
+    },
+    {
       "path": "services/relay/test/v2-http-source-handler.test.ts",
-      "sha256": "b40f5d9e05a8fc075ec07e2723fed2736a0b4db1b05d6324893514ac1cbc6cc0"
+      "sha256": "4566a788e6b5cda9fa122643556d918f9c33f461effb76e1cd0be8aadfdf723b"
     },
     {
       "path": "services/relay/test/v2-proof-store.test.ts",
@@ -404,7 +456,7 @@
     },
     {
       "path": "services/relay/test/v2-source-store.test.ts",
-      "sha256": "854489d1e6814e1029c9c62384b22490f4fc6821aa982d1620c519c1c861908a"
+      "sha256": "4903b661298defb80d5534729f1274bccba6635b1bc2df459f9f97930904cd21"
     },
     {
       "path": "services/relay/tsconfig.json",
@@ -432,7 +484,7 @@
     },
     {
       "path": "THIRD_PARTY_INVENTORY.json",
-      "sha256": "fdad21be9afd0610fef7605992f731e74095abd5f091b81bb1187a7a3e358e9e"
+      "sha256": "9b1bcc13164618e2b581ed6a27b7818e3d22285f3c8acd62fa0428c7069c480d"
     },
     {
       "path": "THIRD_PARTY_NOTICES.md",

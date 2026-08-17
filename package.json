@@ -1,6 +1,6 @@
 {
   "name": "bbbbb",
-  "version": "1.1.0",
+  "version": "1.3.0",
   "private": true,
   "license": "Apache-2.0",
   "description": "Private iPhone alerts from commands, coding agents, and services",
@@ -15,7 +15,8 @@
     "build": "npm run build --workspace @bbbbbapp/protocol && npm run build --workspace @bbbbbapp/cli && npm run build --workspace @bbbbbapp/relay",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "check": "npm run build && npm run typecheck && npm test",
+    "check": "npm run check:credentials && npm run build && npm run typecheck && npm test",
+    "check:credentials": "node scripts/public-credential-scan.mjs .",
     "test:packaging": "node --test scripts/release/*.test.mjs",
     "build:cli-distributions": "node scripts/release/build-cli-distributions.mjs",
     "check:cli-distributions": "bash scripts/release/check-cli-distributions.sh",

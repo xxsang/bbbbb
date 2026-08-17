@@ -59,8 +59,14 @@ Prompt:
 | macOS, Linux, or Windows | [Platform guides](docs/guides/INSTALLING.md) |
 | Self-hosting and operations | [Operations](docs/launch/OPERATIONS.md) |
 
+## Plans and limits
+
+Free accepts 1,000 updates per Inbox in any rolling 30-day period and provides Offline catch-up for the newest 100 encrypted updates for up to seven days. Plus accepts 10,000 and extends catch-up to the newest 500 for up to 30 days, with on-device JSON and CSV export.
+
+There is no daily customer quota. Every Inbox has a shared 20-submission-per-minute safety limit, and adding Sources does not add capacity.
+
 ## Privacy
 
-CLI events leave encrypted; HTTP events are sealed before storage. The relay keeps at most the newest 100 encrypted events for seven days. Sources can send but cannot read history, and a missed banner does not mean a missed update.
+CLI events leave encrypted; HTTP events are sealed before storage. Free keeps the newest 100 encrypted events for up to seven days; Plus keeps the newest 500 for up to 30 days. Sources can send but cannot read history, and a missed banner does not mean a missed update.
 
 The developer core is licensed under the [Apache License 2.0](LICENSE). The iPhone app is separate.

@@ -9,7 +9,7 @@
 
 ## Content boundary
 
-CLI content is encrypted before transmission. HTTP content exists only inside the request-handling Worker until it is normalized and sealed; it is never stored or logged in plaintext. D1 retains only encrypted protocol-2 envelopes for up to seven days and at most the newest 100 per inbox.
+CLI content is encrypted before transmission. HTTP content exists only inside the request-handling Worker until it is normalized and sealed; it is never stored or logged in plaintext. D1 retains only encrypted protocol-2 envelopes within the active tier's recovery window: the newest 100 for up to seven days on Free, or the newest 500 for up to 30 days on Plus.
 
 Authenticated metadata binds protocol version, inbox, Source, event, and HPKE suite. Relabeling or ciphertext tampering fails decryption. Idempotent retries reuse one event identity.
 
@@ -19,4 +19,4 @@ The operated relay and Cloudflare can observe request timing, IP/network metadat
 
 ## Recovery and revocation
 
-A missed or denied notification does not lose a retained accepted update; foreground/manual synchronization recovers it. **Move sending access** and credential replacement invalidate the old private link. Disabling or deleting a Source stops new writes without rewriting retained history. Losing the iPhone private key makes retained ciphertext unrecoverable.
+A missed or denied notification does not lose a retained accepted update; foreground/manual synchronization recovers it. Deleting an update removes it immediately from the active inbox and export, while a recovery copy remains only on the iPhone under **Settings → Recently Deleted** for up to 30 days unless restored or permanently deleted. Offline catch-up never restores a locally deleted update. **Move sending access** and credential replacement invalidate the old private link. Disabling or deleting a Source stops new writes without rewriting retained history. Losing the iPhone private key makes retained ciphertext unrecoverable.

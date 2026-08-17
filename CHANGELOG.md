@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0
+
+- Added aggregate per-Inbox rolling allowances: 1,000 accepted updates on Free and 10,000 on Plus in any 30-day period, with no daily customer quota and a shared 20-submission-per-minute safety limit.
+- Added relay-owned usage snapshots, bounded multi-page Offline catch-up, and Free/Plus retention of newest 100 for seven days or newest 500 for 30 days.
+- Added independently verified non-consumable Plus entitlements, accountless restore binding, and signed App Store refund and revocation handling.
+- Added current requester-first Source connection and one-use encrypted movement of an existing Source's sending access.
+- Added a deterministic public credential scan and tightened the export boundary around deployment identifiers, credentials, private paths, and development-only benchmark artifacts.
+
 ## 1.1.0
 
 - Added HTTP and CLI Sources with independent write-only credentials, owner-visible names, lifecycle controls, and generic APNs wake-ups.

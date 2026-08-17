@@ -6,6 +6,8 @@ import { createV2HttpSourceHandler } from "./v2/http-source-handler.js";
 import { D1V2SourceStore } from "./v2/d1-source-store.js";
 import { D1V2DeviceStore } from "./v2/device-store.js";
 import { encryptSourceTransferURL, validateSourceTransferRecipientKey } from "./v2/source-transfer-crypto.js";
+import { AppleStoreTransactionVerifier, AppleStoreVerifierSet, deriveV2EntitlementId } from "./v2/apple-store-verifier.js";
+import type { V2EntitlementEnvironment } from "./v2/source-store.js";
 
 const textEncoder = new TextEncoder();
 const workerSubtle = crypto.subtle as SubtleCrypto & {
@@ -14,7 +16,7 @@ const workerSubtle = crypto.subtle as SubtleCrypto & {
 const cachedProviderToken = createProviderTokenCache();
 const INVALID_DEVICE_REASONS = new Set(["BadDeviceToken", "DeviceTokenNotForTopic", "ExpiredToken", "Unregistered"]);
 
-interface RelayEnv {
+export interface RelayEnv {
   readonly M2_EVENTS: D1Database;
   readonly WEBSITE_ORIGIN?: string;
   readonly APNS_PRIVATE_KEY?: string;
@@ -24,6 +26,27 @@ interface RelayEnv {
   readonly BUILD_VERSION?: string;
   readonly MIGRATION_SET_SHA256?: string;
   readonly DEPLOYMENT_MANIFEST_SHA256?: string;
+  readonly APP_STORE_ENVIRONMENT?: string;
+  readonly APP_STORE_ACCEPT_SANDBOX?: string;
+  readonly APP_APPLE_ID?: string;
+  readonly ENTITLEMENT_ID_KEY?: string;
+}
+
+export function entitlementConfiguration(env: RelayEnv): { environments: readonly V2EntitlementEnvironment[]; appAppleId?: number; secret: string } | null {
+  if (!env.ENTITLEMENT_ID_KEY || new TextEncoder().encode(env.ENTITLEMENT_ID_KEY).byteLength < 32) return null;
+  if (env.APP_STORE_ENVIRONMENT !== "xcode" && env.APP_STORE_ENVIRONMENT !== "sandbox" && env.APP_STORE_ENVIRONMENT !== "production") return null;
+  if (env.APP_STORE_ENVIRONMENT === "production") {
+    const appAppleId = Number(env.APP_APPLE_ID);
+    if (!Number.isSafeInteger(appAppleId) || appAppleId <= 0) return null;
+    if (env.APP_STORE_ACCEPT_SANDBOX !== undefined && env.APP_STORE_ACCEPT_SANDBOX !== "true") return null;
+    return {
+      environments: env.APP_STORE_ACCEPT_SANDBOX === "true" ? ["production", "sandbox"] : ["production"],
+      appAppleId,
+      secret: env.ENTITLEMENT_ID_KEY,
+    };
+  }
+  if (env.APP_STORE_ACCEPT_SANDBOX !== undefined) return null;
+  return { environments: [env.APP_STORE_ENVIRONMENT], secret: env.ENTITLEMENT_ID_KEY };
 }
 const worker = {
   async fetch(request: Request, env?: Env, ctx?: ExecutionContext): Promise<Response> {
@@ -55,8 +78,13 @@ const worker = {
           : new Response(null, { status: 403 });
       }
       const v2DeviceStore = new D1V2DeviceStore(v2Env.M2_EVENTS);
+      const v2SourceStore = new D1V2SourceStore(v2Env.M2_EVENTS);
+      const entitlement = entitlementConfiguration(v2Env);
+      const appleVerifier = entitlement ? new AppleStoreVerifierSet(entitlement.environments.map((environment) =>
+        new AppleStoreTransactionVerifier(environment, environment === "production" ? entitlement.appAppleId : undefined),
+      )) : null;
       const response = await createV2HttpSourceHandler({
-        store: new D1V2SourceStore(v2Env.M2_EVENTS),
+        store: v2SourceStore,
         now: () => Date.now(),
         randomBytes: (length) => crypto.getRandomValues(new Uint8Array(length)),
         randomUUID: () => crypto.randomUUID(),
@@ -110,6 +138,12 @@ const worker = {
         },
         defer: (promise) => ctx ? ctx.waitUntil(promise) : void promise,
         log: (entry) => console.log(JSON.stringify(entry)),
+        resolveTier: (inboxId) => v2SourceStore.getEntitlementTier(inboxId),
+        ...(entitlement && appleVerifier ? {
+          verifyEntitlementTransaction: (signedTransaction: string, now: number) => appleVerifier.verify(signedTransaction, now),
+          verifyEntitlementNotification: (signedPayload: string, now: number) => appleVerifier.verifyNotification(signedPayload, now),
+          deriveEntitlementId: (originalTransactionId: string, environment: V2EntitlementEnvironment) => deriveV2EntitlementId(originalTransactionId, environment, entitlement.secret),
+        } : {}),
       })(request);
       if (!permitsWebsite) return response;
       const headers = new Headers(response.headers);

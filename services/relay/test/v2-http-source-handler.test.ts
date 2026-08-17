@@ -6,8 +6,11 @@ import {
   openProtocolV2Envelope,
   sealProtocolV2Event,
   type ProtocolV2Envelope,
+  type V2Tier,
 } from "@bbbbbapp/protocol";
 import { createV2HttpSourceHandler } from "../src/v2/http-source-handler.js";
+import type { V2HttpSourceHandlerDependencies } from "../src/v2/http-source-handler.js";
+import { AppleTransactionVerificationError, type V2VerifiedAppleNotification, type V2VerifiedAppleTransaction } from "../src/v2/apple-store-verifier.js";
 import { MemoryV2SourceStore } from "../src/v2/memory-source-store.js";
 
 const relay = "https://relay.example";
@@ -15,7 +18,9 @@ const inboxId = "inbox_primary_0001";
 const readCredential = "read_credential_that_is_long_enough_0001";
 const digest = (value: string) => createHash("sha256").update(value).digest("base64url");
 
-async function harness() {
+type EntitlementDependencies = Pick<V2HttpSourceHandlerDependencies, "verifyEntitlementTransaction" | "verifyEntitlementNotification" | "deriveEntitlementId">;
+
+async function harness(tier: V2Tier = "free", entitlement?: EntitlementDependencies) {
   const store = new MemoryV2SourceStore();
   const logs: Record<string, unknown>[] = [];
   const notifications: string[] = [];
@@ -33,6 +38,10 @@ async function harness() {
     notify: async (id) => { notifications.push(id); },
     defer: (promise) => { deferred.push(promise); },
     log: (entry) => { logs.push(entry); },
+    resolveTier: tier === "plus"
+      ? async () => tier
+      : (requestedInboxId) => store.getEntitlementTier(requestedInboxId),
+    ...(entitlement ?? {}),
   });
   const request = (path: string, init: RequestInit = {}) => handler(new Request(`${relay}${path}`, init));
   const keys = await generateProtocolV2KeyPair();
@@ -40,6 +49,184 @@ async function harness() {
   assert.equal(inboxResponse.status, 201);
   return { store, logs, notifications, deferred, keys, request, setNow: (value: number) => { now = value; } };
 }
+
+test("entitlement verification is read-authorized, replay-safe, movable, revocable, and secret-safe", async () => {
+  let verified: V2VerifiedAppleTransaction = {
+    originalTransactionId: "2000000000000001",
+    status: "active",
+    stateChangedAt: Date.parse("2026-07-19T07:59:00Z"),
+    environment: "xcode",
+  };
+  const value = await harness("free", {
+    verifyEntitlementTransaction: async () => verified,
+    deriveEntitlementId: async () => "derived_entitlement_AAAAAAAAAAAAA",
+  });
+  const path = `/v2/inboxes/${inboxId}/entitlement/verify`;
+  const body = JSON.stringify({ version: 2, signedTransaction: "header.payload.signature" });
+  assert.equal((await value.request(path, { method: "POST", headers: { "content-type": "application/json" }, body })).status, 401);
+  const first = await value.request(path, { method: "POST", headers: { authorization: `Bearer ${readCredential}`, "content-type": "application/json" }, body });
+  assert.equal(first.headers.get("cache-control"), "no-store");
+  assert.deepEqual(await first.json(), { version: 2, state: "plus" });
+  assert.equal(await value.store.getEntitlementTier(inboxId), "plus");
+  assert.deepEqual((await (await value.request(`/v2/inboxes/${inboxId}/usage`, { headers: { authorization: `Bearer ${readCredential}` } })).json() as { recovery: unknown }).recovery, {
+    maximumEvents: 500,
+    maximumAgeDays: 30,
+  });
+  assert.deepEqual(await (await value.request(path, { method: "POST", headers: { authorization: `Bearer ${readCredential}`, "content-type": "application/json" }, body })).json(), { version: 2, state: "plus" });
+
+  const secondInbox = "inbox_secondary_0002";
+  const secondCredential = "read_credential_that_is_long_enough_0002";
+  await value.store.createInbox({ inboxId: secondInbox, publicKey: value.keys.publicKey, readCredentialHash: digest(secondCredential), createdAt: 1 });
+  const moved = await value.request(`/v2/inboxes/${secondInbox}/entitlement/verify`, { method: "POST", headers: { authorization: `Bearer ${secondCredential}`, "content-type": "application/json" }, body });
+  assert.deepEqual(await moved.json(), { version: 2, state: "plus" });
+  assert.equal(await value.store.getEntitlementTier(inboxId), "free");
+
+  verified = { ...verified, status: "revoked", stateChangedAt: Date.parse("2026-07-19T08:00:00Z") };
+  const revoked = await value.request(`/v2/inboxes/${secondInbox}/entitlement/verify`, { method: "POST", headers: { authorization: `Bearer ${secondCredential}`, "content-type": "application/json" }, body });
+  assert.deepEqual(await revoked.json(), { version: 2, state: "free" });
+  assert.deepEqual((await (await value.request(`/v2/inboxes/${secondInbox}/usage`, { headers: { authorization: `Bearer ${secondCredential}` } })).json() as { recovery: unknown }).recovery, {
+    maximumEvents: 100,
+    maximumAgeDays: 7,
+  });
+  const evidence = JSON.stringify(value.logs);
+  assert.equal(evidence.includes("2000000000000001"), false);
+  assert.equal(evidence.includes("derived_entitlement"), false);
+  assert.equal(evidence.includes("header.payload.signature"), false);
+});
+
+test("entitlement verification fails closed when absent, invalid, or retryable", async () => {
+  const unavailable = await harness();
+  const init = { method: "POST", headers: { authorization: `Bearer ${readCredential}`, "content-type": "application/json" }, body: JSON.stringify({ version: 2, signedTransaction: "header.payload.signature" }) };
+  assert.equal((await unavailable.request(`/v2/inboxes/${inboxId}/entitlement/verify`, init)).status, 503);
+
+  const retryable = await harness("free", {
+    verifyEntitlementTransaction: async () => { throw new AppleTransactionVerificationError("retryable"); },
+    deriveEntitlementId: async () => "derived_entitlement_AAAAAAAAAAAAA",
+  });
+  assert.deepEqual(await (await retryable.request(`/v2/inboxes/${inboxId}/entitlement/verify`, init)).json(), { error: "verification_unavailable" });
+  const invalid = await retryable.request(`/v2/inboxes/${inboxId}/entitlement/verify`, { ...init, body: JSON.stringify({ version: 2, signedTransaction: "invalid" }) });
+  assert.equal(invalid.status, 400);
+  assert.deepEqual(await invalid.json(), { error: "invalid_transaction" });
+});
+
+test("verified App Store notifications revoke once, reject stale transitions, and retain no signed payload", async () => {
+  let notification: V2VerifiedAppleNotification = {
+    notificationUUID: "123e4567-e89b-42d3-a456-426614174001",
+    notificationType: "REFUND",
+    transaction: {
+      originalTransactionId: "2000000000000001",
+      status: "revoked",
+      stateChangedAt: Date.parse("2026-07-19T08:00:00Z"),
+      environment: "xcode",
+    },
+  };
+  const value = await harness("free", {
+    verifyEntitlementNotification: async () => notification,
+    deriveEntitlementId: async () => "derived_entitlement_AAAAAAAAAAAAA",
+  });
+  await value.store.applyEntitlement({
+    entitlementId: "derived_entitlement_AAAAAAAAAAAAA",
+    productId: "org.shenren.bbbbb.plus",
+    environment: "xcode",
+    status: "active",
+    stateChangedAt: Date.parse("2026-07-19T07:59:00Z"),
+    verifiedAt: Date.parse("2026-07-19T07:59:30Z"),
+  }, inboxId);
+  assert.equal(await value.store.getEntitlementTier(inboxId), "plus");
+  const request = () => value.request("/v2/app-store/notifications", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ signedPayload: "header.payload.signature" }),
+  });
+  const first = await request();
+  assert.equal(first.status, 204);
+  assert.equal(first.headers.get("cache-control"), "no-store");
+  assert.equal(await value.store.getEntitlementTier(inboxId), "free");
+  assert.equal(value.store.entitlementNotifications.size, 1);
+  assert.equal((await request()).status, 204);
+  assert.equal(value.store.entitlementNotifications.size, 1);
+
+  notification = {
+    ...notification,
+    notificationUUID: "123e4567-e89b-42d3-a456-426614174002",
+    transaction: { ...notification.transaction!, stateChangedAt: Date.parse("2026-07-19T07:58:00Z") },
+  };
+  assert.equal((await request()).status, 204);
+  assert.equal(value.store.entitlements.get("derived_entitlement_AAAAAAAAAAAAA")?.stateChangedAt, Date.parse("2026-07-19T08:00:00Z"));
+
+  notification = {
+    notificationUUID: "123e4567-e89b-42d3-a456-426614174003",
+    notificationType: "TEST",
+    transaction: null,
+  };
+  assert.equal((await request()).status, 204);
+  assert.equal(value.store.entitlementNotifications.size, 3);
+  const evidence = JSON.stringify({ logs: value.logs, notifications: [...value.store.entitlementNotifications.values()] });
+  for (const forbidden of ["header.payload.signature", "2000000000000001", "derived_entitlement"]) assert.equal(evidence.includes(forbidden), false);
+});
+
+test("App Store notification endpoint fails closed for invalid, unavailable, and retryable verification", async () => {
+  const body = JSON.stringify({ signedPayload: "header.payload.signature" });
+  const unavailable = await harness();
+  assert.equal((await unavailable.request("/v2/app-store/notifications", { method: "POST", headers: { "content-type": "application/json" }, body })).status, 503);
+  const retryable = await harness("free", {
+    verifyEntitlementNotification: async () => { throw new AppleTransactionVerificationError("retryable"); },
+    deriveEntitlementId: async () => "derived_entitlement_AAAAAAAAAAAAA",
+  });
+  await retryable.store.applyEntitlement({
+    entitlementId: "derived_entitlement_AAAAAAAAAAAAA",
+    productId: "org.shenren.bbbbb.plus",
+    environment: "xcode",
+    status: "active",
+    stateChangedAt: Date.parse("2026-07-19T07:59:00Z"),
+    verifiedAt: Date.parse("2026-07-19T07:59:30Z"),
+  }, inboxId);
+  assert.equal((await retryable.request("/v2/app-store/notifications", { method: "POST", headers: { "content-type": "application/json" }, body })).status, 503);
+  assert.equal(await retryable.store.getEntitlementTier(inboxId), "plus");
+  assert.equal((await retryable.request("/v2/app-store/notifications", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ signedPayload: "invalid" }) })).status, 400);
+});
+
+test("usage is Inbox-authorized and reflects only the relay-resolved tier", async () => {
+  const value = await harness("plus");
+  const unauthorized = await value.request(`/v2/inboxes/${inboxId}/usage`);
+  assert.equal(unauthorized.status, 401);
+  const response = await value.request(`/v2/inboxes/${inboxId}/usage`, { headers: { authorization: `Bearer ${readCredential}` } });
+  assert.equal(response.headers.get("cache-control"), "no-store");
+  assert.deepEqual(await response.json(), {
+    version: 2,
+    tier: "plus",
+    rolling30Days: { accepted: 0, limit: 10_000, nextReleaseAt: null },
+    burst: { limit: 20 },
+    recovery: { maximumEvents: 500, maximumAgeDays: 30 },
+  });
+});
+
+test("authenticated burst attempts aggregate by Inbox across Sources and invalid bodies still count", async () => {
+  const value = await harness();
+  const first = await createSource(value);
+  const second = await createSource(value);
+  const urls = [new URL(first.sourceURL), new URL(second.sourceURL)];
+  for (let index = 0; index < 20; index += 1) {
+    const url = urls[index % 2]!;
+    const response = await value.request(url.pathname + url.search, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{invalid-json",
+    });
+    assert.equal(response.status, 400);
+  }
+  const url = urls[0]!;
+  const rejected = await value.request(url.pathname + url.search, { method: "POST" });
+  assert.equal(rejected.status, 429);
+  assert.deepEqual(await rejected.json(), {
+    error: "inbox_quota_exceeded",
+    scope: "burst",
+    retryAt: "2026-07-19T08:01:00.000Z",
+  });
+  assert.equal(rejected.headers.get("retry-after"), "60");
+  assert.equal(value.store.events.size, 0);
+  assert.equal(value.notifications.length, 0);
+});
 
 async function createCliSource(value: Awaited<ReturnType<typeof harness>>) {
   const sessionResponse = await value.request("/v2/cli-sources/sessions", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sourceName: "Encrypted builds" }) });
@@ -316,6 +503,49 @@ test("CLI Source approval issues one write-only public-key profile and accepts o
   const afterTest = await value.request(`/v2/inboxes/${inboxId}/events`, { headers: { authorization: `Bearer ${readCredential}` } });
   const tested = await Promise.all(((await afterTest.json()) as { events: ProtocolV2Envelope[] }).events.map((item) => openProtocolV2Envelope(item, value.keys.privateKey)));
   assert.equal(tested.find((item) => item.work === "Setup test")?.sourceMethod, "cli");
+});
+
+test("encrypted history paginates the complete Plus allowance with bounded cursors", async () => {
+  const value = await harness("plus");
+  const acceptedAt = Date.parse("2026-07-19T07:00:00Z");
+  const entries = new Map<string, { envelope: ProtocolV2Envelope; acceptedAt: number }>();
+  for (let index = 0; index < 120; index += 1) {
+    const eventId = `018f6f18-7f2f-7d3d-a932-${index.toString(16).padStart(12, "0")}`;
+    entries.set(eventId, {
+      acceptedAt: acceptedAt + index,
+      envelope: {
+        version: 2,
+        eventId,
+        inboxId,
+        sourceId: "source_history_0001",
+        suite: "DHKEM-P256-HKDF-SHA256/HKDF-SHA256/AES-128-GCM",
+        enc: "bounded",
+        ciphertext: "bounded",
+      },
+    });
+  }
+  value.store.events.set(inboxId, entries);
+
+  const collected = new Set<string>();
+  let cursor: string | null = null;
+  const pageSizes: number[] = [];
+  do {
+    const suffix = cursor === null ? "" : `?cursor=${encodeURIComponent(cursor)}`;
+    const response = await value.request(`/v2/inboxes/${inboxId}/events${suffix}`, {
+      headers: { authorization: `Bearer ${readCredential}` },
+    });
+    assert.equal(response.status, 200);
+    const page = await response.json() as { events: ProtocolV2Envelope[]; nextCursor?: string };
+    pageSizes.push(page.events.length);
+    for (const event of page.events) collected.add(event.eventId);
+    cursor = page.nextCursor ?? null;
+  } while (cursor !== null);
+
+  assert.deepEqual(pageSizes, [50, 50, 20]);
+  assert.equal(collected.size, 120);
+  assert.equal((await value.request(`/v2/inboxes/${inboxId}/events?cursor=invalid`, {
+    headers: { authorization: `Bearer ${readCredential}` },
+  })).status, 400);
 });
 
 test("same-phone code is claimable and approvable only with inbox authority", async () => {

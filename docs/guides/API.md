@@ -36,11 +36,15 @@ The same route accepts `Authorization: Bearer {writeCredential}`. A CLI Source m
 
 The write credential receives `401` from inbox-history routes and cannot decrypt retained events.
 
+Every authenticated submission attempt shares one Inbox-level fixed-minute burst allowance. Unique accepted events also share the Inbox's rolling-30-day allowance across every Source. A rejected sender receives `429`, `Retry-After`, and only `inbox_quota_exceeded`, the bounded scope (`burst` or `rolling_30_days`), and `retryAt`; Inbox counts, tier, limits, and Source metadata are not disclosed.
+
 ## Inbox and Source management
 
 Inbox read authority is required for:
 
 - `GET /v2/inboxes/{inboxId}/events`
+- `GET /v2/inboxes/{inboxId}/usage`
+- `POST /v2/inboxes/{inboxId}/entitlement/verify`
 - `GET /v2/inboxes/{inboxId}/sources`
 - `PATCH /v2/inboxes/{inboxId}/sources/{sourceId}`
 - `POST /v2/inboxes/{inboxId}/sources/{sourceId}/test`
@@ -49,3 +53,11 @@ Inbox read authority is required for:
 - `PUT` or `DELETE /v2/inboxes/{inboxId}/device`
 
 Protocol-1 and retired trigger routes return `404`; they are not migration surfaces.
+
+The usage response identifies `free` or `plus`, the rolling-30-day count and limit, the shared burst ceiling, and the active Offline catch-up boundaries. It is server-owned metadata, never part of an event envelope or APNs payload.
+
+The entitlement verification route accepts only the bounded protocol-2 signed-transaction request. The relay verifies the StoreKit JWS independently, persists the resulting accountless binding, and returns only `free` or `plus`. It never accepts a client-owned paid flag or exposes Apple transaction, account-token, or derived entitlement identifiers. Responses and telemetry discard the signed payload and use `Cache-Control: no-store`.
+
+## App Store lifecycle notifications
+
+`POST /v2/app-store/notifications` is the public App Store Server Notifications V2 receiver. It accepts only Apple's bounded `{ "signedPayload": "..." }` body, verifies the outer notification and any relevant inner transaction before mutation, and returns an empty no-store response. Verified refund and revoke notifications remove the active binding; unrelated verified notification types are deduplicated and ignored. The relay retains only bounded notification metadata for replay control, never the signed payload or Apple transaction/account identifiers.

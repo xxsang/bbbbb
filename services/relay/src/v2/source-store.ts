@@ -1,8 +1,26 @@
-import type { ProtocolV2Envelope } from "@bbbbbapp/protocol";
+import {
+  PLUS_PRODUCT_ID,
+  V2_TIER_LIMITS,
+  type ProtocolV2Envelope,
+  type ProtocolV2UsageSnapshot,
+  type V2QuotaScope,
+  type V2Tier,
+} from "@bbbbbapp/protocol";
 
-export const V2_RETENTION_MS = 7 * 24 * 60 * 60 * 1_000;
-export const V2_MAX_EVENTS = 100;
-export const V2_MAX_DAILY_EVENTS = 100;
+export const V2_DAY_MS = 24 * 60 * 60 * 1_000;
+export const V2_ROLLING_WINDOW_MS = 30 * V2_DAY_MS;
+
+export interface V2TierPolicy {
+  readonly tier: V2Tier;
+  readonly rolling30Days: number;
+  readonly burst: number;
+  readonly recoveryMaximumEvents: number;
+  readonly recoveryMaximumAgeDays: number;
+}
+
+export function v2TierPolicy(tier: V2Tier): V2TierPolicy {
+  return { tier, ...V2_TIER_LIMITS[tier] };
+}
 
 export interface V2Inbox {
   readonly inboxId: string;
@@ -52,7 +70,38 @@ export interface V2SourceTransferSession {
   readonly expiresAt: number;
 }
 
-export type V2EventPutResult = "inserted" | "duplicate" | "quota_exceeded";
+export const V2_ENTITLEMENT_ENVIRONMENTS = ["xcode", "sandbox", "production"] as const;
+export type V2EntitlementEnvironment = (typeof V2_ENTITLEMENT_ENVIRONMENTS)[number];
+
+export interface V2VerifiedEntitlementClaim {
+  readonly entitlementId: string;
+  readonly productId: typeof PLUS_PRODUCT_ID;
+  readonly environment: V2EntitlementEnvironment;
+  readonly status: "active" | "revoked";
+  readonly stateChangedAt: number;
+  readonly verifiedAt: number;
+}
+
+const DERIVED_ENTITLEMENT_ID = /^[A-Za-z0-9_-]{32,128}$/u;
+export function validateV2VerifiedEntitlementClaim(value: V2VerifiedEntitlementClaim): V2VerifiedEntitlementClaim {
+  if (
+    !DERIVED_ENTITLEMENT_ID.test(value.entitlementId) ||
+    value.productId !== PLUS_PRODUCT_ID ||
+    !V2_ENTITLEMENT_ENVIRONMENTS.includes(value.environment) ||
+    (value.status !== "active" && value.status !== "revoked") ||
+    !Number.isSafeInteger(value.stateChangedAt) || value.stateChangedAt < 0 ||
+    !Number.isSafeInteger(value.verifiedAt) || value.verifiedAt < value.stateChangedAt
+  ) throw new TypeError("verified entitlement claim is invalid");
+  return structuredClone(value);
+}
+
+export type V2EntitlementApplyResult = "applied" | "idempotent" | "stale" | "inbox_unavailable";
+export type V2EntitlementNotificationApplyResult = Exclude<V2EntitlementApplyResult, "inbox_unavailable"> | "ignored";
+
+export type V2EventPutResult =
+  | { readonly kind: "inserted" }
+  | { readonly kind: "duplicate" }
+  | { readonly kind: "quota_exceeded"; readonly scope: "rolling_30_days"; readonly retryAt: number };
 
 export interface V2SourceStore {
   createInbox(inbox: V2Inbox): Promise<boolean>;
@@ -85,7 +134,11 @@ export interface V2SourceStore {
   deleteSource(sourceId: string): Promise<boolean>;
   deleteInbox(inboxId: string): Promise<boolean>;
   deleteEvents(inboxId: string): Promise<void>;
-  putEvent(source: V2Source, envelope: ProtocolV2Envelope, acceptedAt: number): Promise<V2EventPutResult>;
-  listEvents(inboxId: string, now: number): Promise<ProtocolV2Envelope[]>;
+  putEvent(source: V2Source, envelope: ProtocolV2Envelope, acceptedAt: number, policy: V2TierPolicy): Promise<V2EventPutResult>;
+  listEvents(inboxId: string, now: number, policy: V2TierPolicy): Promise<ProtocolV2Envelope[]>;
+  getUsage(inboxId: string, now: number, policy: V2TierPolicy): Promise<ProtocolV2UsageSnapshot>;
+  applyEntitlement(claim: V2VerifiedEntitlementClaim, inboxId: string | null): Promise<V2EntitlementApplyResult>;
+  applyEntitlementNotification(notificationUUID: string, notificationType: string, receivedAt: number, claim: V2VerifiedEntitlementClaim | null): Promise<V2EntitlementNotificationApplyResult>;
+  getEntitlementTier(inboxId: string): Promise<V2Tier>;
   incrementRateLimit(scope: string, windowStart: number): Promise<number>;
 }

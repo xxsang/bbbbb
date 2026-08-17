@@ -1,7 +1,33 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import worker from "../src/index.js";
+import worker, { entitlementConfiguration } from "../src/index.js";
+
+test("configures exact Apple environments and fails closed on ambiguous production input", () => {
+  const secret = "S".repeat(32);
+  assert.deepEqual(entitlementConfiguration({
+    ENTITLEMENT_ID_KEY: secret,
+    APP_STORE_ENVIRONMENT: "production",
+    APP_STORE_ACCEPT_SANDBOX: "true",
+    APP_APPLE_ID: "6791204016",
+  } as unknown as Parameters<typeof entitlementConfiguration>[0]), {
+    environments: ["production", "sandbox"],
+    appAppleId: 6791204016,
+    secret,
+  });
+  assert.deepEqual(entitlementConfiguration({
+    ENTITLEMENT_ID_KEY: secret,
+    APP_STORE_ENVIRONMENT: "sandbox",
+  } as unknown as Parameters<typeof entitlementConfiguration>[0]), {
+    environments: ["sandbox"],
+    secret,
+  });
+  for (const configuration of [
+    { ENTITLEMENT_ID_KEY: secret, APP_STORE_ENVIRONMENT: "production", APP_STORE_ACCEPT_SANDBOX: "true" },
+    { ENTITLEMENT_ID_KEY: secret, APP_STORE_ENVIRONMENT: "production", APP_STORE_ACCEPT_SANDBOX: "false", APP_APPLE_ID: "6791204016" },
+    { ENTITLEMENT_ID_KEY: secret, APP_STORE_ENVIRONMENT: "sandbox", APP_STORE_ACCEPT_SANDBOX: "true" },
+  ]) assert.equal(entitlementConfiguration(configuration as unknown as Parameters<typeof entitlementConfiguration>[0]), null);
+});
 
 test("reports relay health and protocol compatibility", async () => {
   const response = await worker.fetch(new Request("https://relay.test/health"));
@@ -71,7 +97,7 @@ test("rejects every protocol-1 and retired trigger route", async () => {
 
 test("serves complete public trust surfaces with privacy-safe headers", async () => {
   const expectations = [
-    ["/support", ["bbbbb Support", "shen@shenren.org", "newest 100 encrypted events"]],
+    ["/support", ["bbbbb Support", "shen@shenren.org", "newest 100 encrypted updates", "Check now"]],
     ["/privacy", ["bbbbb Privacy Policy", "Cloudflare D1", "Apple processes", "Source transfer metadata", "no advertising"]],
     ["/deletion", ["Delete bbbbb Data", "credential-transfer records", "Delete hosted encrypted history", "Delete local history"]],
     ["/status", ["bbbbb Service Status", "endpoint is reachable", "/health"]],

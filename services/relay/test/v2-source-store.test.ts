@@ -8,7 +8,13 @@ function databaseWithChanges(changes: number): D1Database {
     bind() { return this; },
     async run() { return { success: true, meta: { changes } }; },
   };
-  return { prepare: () => statement } as unknown as D1Database;
+  return {
+    prepare: () => statement,
+    batch: async () => [
+      { success: true, meta: { changes } },
+      { success: true, meta: { changes } },
+    ],
+  } as unknown as D1Database;
 }
 
 test("D1 cascade deletion treats every positive change count as success", async () => {

@@ -7,7 +7,9 @@ const tree = JSON.parse(await new Promise((resolve, reject) => {
 const packages = new Map();
 function collect(dependencies = {}) {
   for (const [name, value] of Object.entries(dependencies)) {
-    if (value.extraneous) continue;
+    // `npm ls --all` represents an uninstalled optional peer as an empty
+    // object. It is not shipped runtime code and has no metadata to inventory.
+    if (value.extraneous || typeof value.version !== "string") continue;
     if (!name.startsWith("@bbbbbapp/")) packages.set(`${name}@${value.version}`, name);
     collect(value.dependencies);
   }

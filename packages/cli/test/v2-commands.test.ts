@@ -51,7 +51,7 @@ test("help exposes only current Source setup and commands while version stays pr
   assert.doesNotMatch(output, /Channel Key|bbbbb pair|bbbbb invite|--source/u);
   context.stdout.length = 0;
   assert.equal(await executeCli(["--version"], context.dependencies), 0);
-  assert.equal(context.stdout.join(""), "bbbbb 1.1.1\n");
+  assert.equal(context.stdout.join(""), "bbbbb 1.3.0\n");
 });
 
 test("check is read-only, write-capability scoped, and secret-safe", async () => {

@@ -46,7 +46,7 @@ With no options, send reports a neutral Activity update.
 Structured JSON is read from standard input and accepts category, label, work, message, and details only.
 Use --flag=value when a send value begins with --.`;
 
-export const CLI_VERSION = "1.1.1";
+export const CLI_VERSION = "1.3.0";
 export const DEFAULT_RELAY_URL = "https://bbbbb-relay-production.xxsang.workers.dev";
 
 export function runCli(args: readonly string[]): string {

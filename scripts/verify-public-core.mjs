@@ -13,7 +13,9 @@ const required = [
   "packages/protocol/fixtures/protocol-v2-hpke.json", "packages/cli/LICENSE", "services/relay/LICENSE",
   "services/relay/migrations/0004_v2_http_sources.sql", "services/relay/migrations/0005_v2_cli_sources.sql",
   "services/relay/migrations/0006_v2_source_transfers.sql",
-  "skills/bbbbb-notify/SKILL.md", "skills/bbbbb-notify/agents/openai.yaml", "skills/bbbbb-notify/scripts/send-http.sh", "scripts/documentation-contracts.mjs", "scripts/install-bbbbb-notify-skill.sh", "docs/guides/API.md",
+  "services/relay/migrations/0007_v13_inbox_usage.sql",
+  "services/relay/migrations/0008_v13_entitlements.sql", "services/relay/migrations/0009_v13_app_store_notifications.sql", "services/relay/migrations/0010_v13_remove_daily_quota.sql",
+  "skills/bbbbb-notify/SKILL.md", "skills/bbbbb-notify/agents/openai.yaml", "skills/bbbbb-notify/scripts/send-http.sh", "scripts/documentation-contracts.mjs", "scripts/install-bbbbb-notify-skill.sh", "scripts/public-credential-scan.mjs", "docs/guides/API.md",
   "docs/guides/INSTALLING.md", "docs/guides/INTEGRATIONS.md", "docs/guides/MACOS.md", "docs/guides/LINUX.md",
   "docs/guides/WINDOWS.md", "docs/guides/HTTP_SOURCES.md", "docs/guides/CLI_SOURCES.md", "docs/guides/SELF_HOSTING.md", "docs/guides/UPGRADING.md",
   "docs/launch/OPEN_SOURCE.md", "docs/launch/TRUST.md", "docs/launch/OPERATIONS.md", "docs/launch/VERSIONING.md",
@@ -34,7 +36,7 @@ for (const path of ["assets/readme/needs-you.png", "assets/readme/completed-dark
 for (const path of paths) {
   if (/(^|\/)(apps|legacy|\.git|v1|pairing)(\/|$)/u.test(path) || /\.(swift|xcodeproj|xcworkspace)$/u.test(path)) throw new Error(`private or retired path exported: ${path}`);
   if (["scripts/export-public-core.sh", "scripts/export-public-design.mjs"].includes(path)) throw new Error(`private repository export utility included: ${path}`);
-  if (["services/relay/src/v11c-proof-worker.ts", "services/relay/wrangler.v11c.jsonc"].includes(path)) throw new Error(`development proof artifact included: ${path}`);
+  if (["services/relay/src/v11c-proof-worker.ts", "services/relay/wrangler.v11c.jsonc", "services/relay/src/v13-d1-benchmark-worker.ts", "services/relay/wrangler.v13-benchmark.jsonc"].includes(path)) throw new Error(`development proof artifact included: ${path}`);
   if (/(^|\/)[^/]*\.owner\.[^/]*$/u.test(path)) throw new Error(`owner-only file exported: ${path}`);
   if (/(^|\/)(node_modules|dist|\.build|\.wrangler|coverage)(\/|$)/u.test(path) || /(^|\/)\.dev\.vars$/u.test(path)) throw new Error(`local build output exported: ${path}`);
   if (/migrations\/000[123]_/u.test(path) || /(?:protocol|pairing)-v1/u.test(path)) throw new Error(`protocol-1 compatibility file exported: ${path}`);
@@ -72,7 +74,7 @@ await validateConceptContracts(root, [
       { name: "HTTP-first and optional CLI chooser", patterns: [/HTTP Sources are the default/u, /No CLI required/u, /Install the CLI/u] },
       { name: "npm CLI install with release fallback", patterns: [/npm install --global @bbbbbapp\/cli/u, /GitHub Release/u] },
       { name: "honest protection boundary", patterns: [/CLI events leave encrypted/u, /HTTP events are sealed before storage/u] },
-      { name: "recoverable privacy boundary", patterns: [/newest 100/u, /seven days/u, /missed banner/u] },
+      { name: "recoverable privacy boundary", patterns: [/newest 100/u, /seven days/u, /newest 500/u, /30 days/u, /Plus/u, /missed banner/u] },
       { name: "pasteable agent notification prompt", patterns: [/Notify me when it finishes/u, /Attention only if I need to act/u, /No progress updates/u] },
       { name: "routed setup and operations docs", patterns: [/docs\/guides\/INSTALLING\.md/u, /docs\/launch\/OPERATIONS\.md/u] },
     ],
@@ -120,6 +122,7 @@ for (const retired of ["needs-you.png", "completed-dark.png", "source-approval.p
 if (readme.split(/\s+/u).length > 500) throw new Error("public README is too long for the concise route-first contract");
 for (const path of ["docs/guides/MACOS.md", "docs/guides/LINUX.md", "docs/guides/WINDOWS.md", "docs/guides/HTTP_SOURCES.md", "docs/guides/CLI_SOURCES.md"]) if ((await read(path)).split(/\s+/u).length > 550) throw new Error(`${path} is too long for the concise setup contract`);
 for (const retired of ["15-minute threshold", "bbbbb invite", "bbbbb join", "completion-inbox", "one private Channel"]) if (readme.includes(retired)) throw new Error(`public README contains retired guidance: ${retired}`);
+for (const requiredPlanCopy of ["1,000 updates", "10,000", "no daily customer quota", "20-submission-per-minute"]) if (!readme.includes(requiredPlanCopy)) throw new Error(`public README is missing the current plan contract: ${requiredPlanCopy}`);
 
 const skillInstallRoot = await mkdtemp(join(tmpdir(), "bbbbb-skill-contract-"));
 try {
@@ -132,7 +135,7 @@ try {
   await rm(skillInstallRoot, { recursive: true, force: true });
 }
 const version = JSON.parse(await read("release/version.json"));
-if (version.productVersion !== "1.1.0" || version.components?.protocol?.wireVersion !== 2 || version.ios?.marketingVersion !== "1.1") throw new Error("public version contract is not V1.1 protocol 2");
+if (version.productVersion !== "1.3.0" || version.components?.protocol?.wireVersion !== 2) throw new Error("public product version contract is not V1.3 protocol 2");
 const license = await read("LICENSE");
 if (!license.startsWith("                                 Apache License\n                           Version 2.0, January 2004\n")) throw new Error("canonical Apache-2.0 license missing");
 for (const path of ["packages/protocol/LICENSE", "packages/cli/LICENSE", "services/relay/LICENSE"]) if ((await read(path)) !== license) throw new Error(`license mismatch: ${path}`);
@@ -145,7 +148,13 @@ for (const [path, packageVersion] of packageVersions) {
   const metadata = JSON.parse(await read(path));
   if (metadata.version !== packageVersion || metadata.private !== false || metadata.license !== "Apache-2.0" || metadata.publishConfig?.access !== "public") throw new Error(`package not publication-ready: ${path}`);
 }
-if ((await read("services/relay/wrangler.jsonc")).includes("account_id")) throw new Error("Cloudflare account identifier exported");
+for (const path of paths.filter((value) => /(^|\/)wrangler[^/]*\.jsonc$/u.test(value))) {
+  const configuration = await read(path);
+  if (configuration.includes("account_id")) throw new Error(`Cloudflare account identifier exported: ${path}`);
+  for (const match of configuration.matchAll(/"database_id"\s*:\s*"([0-9a-f-]{36})"/giu)) {
+    if (match[1] !== "00000000-0000-0000-0000-000000000000") throw new Error(`Cloudflare database identifier exported: ${path}`);
+  }
+}
 const manifest = JSON.parse(await read("PUBLIC_CORE_MANIFEST.json"));
 const actual = [];
 for (const path of paths.filter((path) => path !== "PUBLIC_CORE_MANIFEST.json").sort((a, b) => a.localeCompare(b))) actual.push({ path, sha256: createHash("sha256").update(await readFile(join(root, path))).digest("hex") });
