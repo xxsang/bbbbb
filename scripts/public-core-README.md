@@ -11,7 +11,9 @@
 
 ![Demo: a curl request and a wrapped command each deliver a private update to the bbbbb iPhone inbox](assets/readme/bbbbb-demo.svg)
 
-Step away while your work runs. bbbbb (“B-five”) keeps each update in one private iPhone inbox, where Attention waits for action and Activity stays easy to scan. HTTP Sources are the default; the optional CLI wraps finite commands.
+You kicked off a long build. Your coding agent hit a question. A deploy is waiting on your approval. bbbbb (“B-five”) puts that moment on your iPhone—and keeps the update in one private iPhone inbox.
+
+Anything that needs an answer stays in Attention until you resolve it. Everything else stays easy to scan in Activity. HTTP Sources are the default; the optional CLI wraps finite commands.
 
 ## Quick start
 
@@ -61,9 +63,9 @@ Prompt:
 
 ## Plans and limits
 
-Every core feature is included in Free: 1,000 updates per Inbox in any rolling 30-day period, with Offline catch-up for the newest 100 encrypted updates for up to seven days.
+Free includes every core feature: 1,000 updates per Inbox in any rolling 30-day period, with Offline catch-up for the newest 100 encrypted updates for up to seven days.
 
-If you need more capacity, longer catch-up, or export, Plus is one purchase, not a subscription: 10,000 updates per Inbox in any rolling 30-day period, catch-up for the newest 500 encrypted updates for up to 30 days, and on-device JSON and CSV export.
+Plus is optional. Pay once—no subscription—for 10,000 updates per Inbox in any rolling 30-day period, longer catch-up for the newest 500 encrypted updates for up to 30 days, and on-device JSON and CSV export.
 
 There is no daily customer quota. Every Inbox has a shared 20-submission-per-minute safety limit, and adding Sources does not add capacity.
 

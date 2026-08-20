@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "5d7207dd8b8c2547c9adfac5b901104cb206f6ca04c1c4a9e91de247f2894670",
+  "treeSha256": "3ab0fdaa79c0e45d436307395d1bc8cb8ea180fac0bd8a8173636a4a4124d27b",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -232,11 +232,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "d5a7255e04d688a4df0a6e74d9d3729e7657fdc737e8b8612ad7c0c591d2fbb6"
+      "sha256": "e672998f6d16adc5c77bf9a3d70e5fcfc259dad5b534670689cf78a5167b25f0"
     },
     {
       "path": "release/version.json",
-      "sha256": "2506c3f352f35217b863357e8c952be5dbe7f7fb12f0caa38cc01cc178213714"
+      "sha256": "eb219e6cfd959752aa60c150a8803e3b3057dbbd7208d513eb2b21dc85145720"
     },
     {
       "path": "scripts/check-public-core.sh",
@@ -272,7 +272,7 @@
     },
     {
       "path": "scripts/public-core-README.md",
-      "sha256": "d5a7255e04d688a4df0a6e74d9d3729e7657fdc737e8b8612ad7c0c591d2fbb6"
+      "sha256": "e672998f6d16adc5c77bf9a3d70e5fcfc259dad5b534670689cf78a5167b25f0"
     },
     {
       "path": "scripts/public-credential-scan.mjs",
@@ -304,7 +304,7 @@
     },
     {
       "path": "scripts/verify-public-core.mjs",
-      "sha256": "f42f8bce11b140dbfbbc9693a6824854673d5c9f760307e5259e8d783dbde84d"
+      "sha256": "63606e4d199579e5c09d7151a37dcab8c60bd40ec32bfc3f0d24e3319f0aaf81"
     },
     {
       "path": "SECURITY.md",
