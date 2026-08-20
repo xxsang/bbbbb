@@ -70,6 +70,7 @@ await validateConceptContracts(root, [
     path: "README.md",
     concepts: [
       { name: "private update promise", patterns: [/Know the moment[\s\S]*work needs you/u] },
+      { name: "durable private inbox", patterns: [/keeps each update in one private iPhone inbox/u, /Every core feature is included in Free/u] },
       { name: "sender-controlled Attention and Activity", patterns: [/category is chosen by the sender/u, /Attention[\s\S]*Activity/u] },
       { name: "HTTP-first and optional CLI chooser", patterns: [/HTTP Sources are the default/u, /No CLI required/u, /Install the CLI/u] },
       { name: "npm CLI install with release fallback", patterns: [/npm install --global @bbbbbapp\/cli/u, /GitHub Release/u] },
