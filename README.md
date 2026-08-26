@@ -13,13 +13,11 @@
 
 <p align="center">
   <a href="https://apps.apple.com/us/app/bbbbb-coding-agent-alerts/id6791204016">
-    <img src="assets/readme/bbbbb-app-icon.png" width="144" alt="Download bbbbb for iPhone on the App Store">
+    <img src="assets/readme/download-on-the-app-store.svg" height="60" alt="Download on the App Store">
   </a>
 </p>
 
 <p align="center">
-  <a href="https://apps.apple.com/us/app/bbbbb-coding-agent-alerts/id6791204016"><strong>Download bbbbb on the App Store</strong></a>
-  ·
   <a href="https://bbbbb.app/">Visit bbbbb.app</a>
 </p>
 
@@ -94,3 +92,5 @@ There is no daily customer quota. Every Inbox has a shared 20-submission-per-min
 CLI events leave encrypted; HTTP events are sealed before storage. Free keeps the newest 100 encrypted events for up to seven days; Plus keeps the newest 500 for up to 30 days. Sources can send but cannot read history, and a missed banner does not mean a missed update.
 
 The developer core is licensed under the [Apache License 2.0](LICENSE). The iPhone app is separate.
+
+<sub>Apple, the Apple logo, and App Store are trademarks of Apple Inc., registered in the U.S. and other countries and regions.</sub>

@@ -9,7 +9,7 @@ const root = resolve(process.argv[2] ?? "");
 if (!process.argv[2]) throw new Error("usage: verify-public-core.mjs <export-directory>");
 const required = [
   ".github/workflows/ci.yml", ".gitignore", "README.md", "LICENSE", "CHANGELOG.md", "SECURITY.md", "CONTRIBUTING.md",
-  "THIRD_PARTY_NOTICES.md", "THIRD_PARTY_INVENTORY.json", "assets/readme/bbbbb-logo.svg", "assets/readme/bbbbb-demo.svg", "assets/readme/bbbbb-app-icon.png", "release/version.json", "packages/protocol/LICENSE",
+  "THIRD_PARTY_NOTICES.md", "THIRD_PARTY_INVENTORY.json", "assets/readme/bbbbb-logo.svg", "assets/readme/bbbbb-demo.svg", "assets/readme/download-on-the-app-store.svg", "release/version.json", "packages/protocol/LICENSE",
   "packages/protocol/fixtures/protocol-v2-hpke.json", "packages/cli/LICENSE", "services/relay/LICENSE",
   "services/relay/migrations/0004_v2_http_sources.sql", "services/relay/migrations/0005_v2_cli_sources.sql",
   "services/relay/migrations/0006_v2_source_transfers.sql",
@@ -30,7 +30,7 @@ async function walk(directory) {
 await walk(root);
 const paths = files.map((path) => relative(root, path).split("\\").join("/"));
 for (const path of required) if (!paths.includes(path)) throw new Error(`missing public-core file: ${path}`);
-for (const path of ["assets/readme/needs-you.png", "assets/readme/completed-dark.png", "assets/readme/source-approval.png", "assets/readme/event-detail.png", "assets/readme/privacy-lock.png", "assets/readme/sources.png"]) {
+for (const path of ["assets/readme/bbbbb-app-icon.png", "assets/readme/needs-you.png", "assets/readme/completed-dark.png", "assets/readme/source-approval.png", "assets/readme/event-detail.png", "assets/readme/privacy-lock.png", "assets/readme/sources.png"]) {
   if (paths.includes(path)) throw new Error(`unnecessary README image exported: ${path}`);
 }
 for (const path of paths) {
@@ -72,7 +72,8 @@ await validateConceptContracts(root, [
     concepts: [
       { name: "private update promise", patterns: [/Know the moment[\s\S]*work needs you/u] },
       { name: "durable private inbox", patterns: [/puts that moment on your iPhone/u, /keeps the update in your inbox/u, /Free includes every core feature/u, /Plus raises the rolling limit/u] },
-      { name: "public iPhone app", patterns: [/Download bbbbb on the App Store/u, /assets\/readme\/bbbbb-app-icon\.png/u, /apps\.apple\.com\/us\/app\/bbbbb-coding-agent-alerts\/id6791204016/u] },
+      { name: "public iPhone app", patterns: [/Download on the App Store/u, /assets\/readme\/download-on-the-app-store\.svg/u, /apps\.apple\.com\/us\/app\/bbbbb-coding-agent-alerts\/id6791204016/u] },
+      { name: "Apple trademark credit", patterns: [/Apple, the Apple logo, and App Store are trademarks of Apple Inc\./u] },
       { name: "sender-controlled Attention and Activity", patterns: [/category is chosen by the sender/u, /Attention[\s\S]*Activity/u] },
       { name: "HTTP-first and optional CLI chooser", patterns: [/Connect with a temporary QR or six-digit code/u, /No CLI required/u, /Install the CLI/u] },
       { name: "npm CLI install with release fallback", patterns: [/npm install --global @bbbbbapp\/cli/u, /GitHub Release/u] },
@@ -123,7 +124,7 @@ for (const path of ["README.md", "docs/guides/INSTALLING.md", "docs/guides/INTEG
 const readme = await read("README.md");
 for (const retired of ["needs-you.png", "completed-dark.png", "source-approval.png", "privacy-lock.png", "event-detail.png", "sources.png", "Needs You", "Completed", "V11-", "New in 1.1"]) if (readme.includes(retired)) throw new Error(`public README contains internal or superseded presentation: ${retired}`);
 const readmeProse = readme.replace(/<[^>]*>/gu, " ");
-if (readmeProse.split(/\s+/u).filter(Boolean).length > 500) throw new Error("public README is too long for the concise route-first contract");
+if (readmeProse.split(/\s+/u).filter(Boolean).length > 525) throw new Error("public README is too long for the concise route-first contract");
 for (const path of ["docs/guides/MACOS.md", "docs/guides/LINUX.md", "docs/guides/WINDOWS.md", "docs/guides/HTTP_SOURCES.md", "docs/guides/CLI_SOURCES.md"]) if ((await read(path)).split(/\s+/u).length > 550) throw new Error(`${path} is too long for the concise setup contract`);
 for (const retired of ["15-minute threshold", "bbbbb invite", "bbbbb join", "completion-inbox", "one private Channel"]) if (readme.includes(retired)) throw new Error(`public README contains retired guidance: ${retired}`);
 for (const requiredPlanCopy of ["1,000 updates", "10,000", "no daily customer quota", "20-submission-per-minute"]) if (!readme.includes(requiredPlanCopy)) throw new Error(`public README is missing the current plan contract: ${requiredPlanCopy}`);

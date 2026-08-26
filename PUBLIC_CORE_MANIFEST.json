@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "dc20b6ab2dd785650586d9fb5a979e95e30e4c95f37d2eedca3d7b075bc0d753",
+  "treeSha256": "933ce059a6604fc7a4b9ac69bcff4fb85e899284085072e669e02f512d773e3b",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -11,16 +11,16 @@
       "sha256": "b06a99847bb2bdb9520b3f5581d762b0927692284c50e22d3165f5253d155f74"
     },
     {
-      "path": "assets/readme/bbbbb-app-icon.png",
-      "sha256": "492c23974b1202b4a36069c19a868add3acb00305fc2cd4ee66e039ee5254db5"
-    },
-    {
       "path": "assets/readme/bbbbb-demo.svg",
       "sha256": "0654bb10b858befbe0d3d14c3439bb125b4a63f4fa5b75184c3a7b7c5cbba5bc"
     },
     {
       "path": "assets/readme/bbbbb-logo.svg",
       "sha256": "b86ae8961d356af10ed4535cb4f36a81fdd5b490457e1c4d1de9c0a90deadad5"
+    },
+    {
+      "path": "assets/readme/download-on-the-app-store.svg",
+      "sha256": "a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f"
     },
     {
       "path": "CHANGELOG.md",
@@ -240,7 +240,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "d5dfbf45479c07174b1511bed784a423ecaf2c94df5a018deff751aa353c8489"
+      "sha256": "7d4bc9083cdaed5cee72176d248a6c9f4e0f1acbc8de510ad793c3f34656c291"
     },
     {
       "path": "release/version.json",
@@ -292,7 +292,7 @@
     },
     {
       "path": "scripts/verify-public-core.mjs",
-      "sha256": "454b588f5854f8a1b3e3319eb3b33efa81467d5bd1b96e2ad80cba3dd685dcea"
+      "sha256": "172705cf9244911e3ebf8530dae7137850414fccc134985477549aed48ccc409"
     },
     {
       "path": "SECURITY.md",
