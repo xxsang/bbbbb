@@ -45,6 +45,7 @@ cd "$candidate"
 npm ci --ignore-scripts
 npm audit --audit-level=high
 npm run check
+npm run test:packaging
 node packages/cli/dist/src/index.js --help | grep -q "bbbbb CLI"
 node packages/cli/dist/src/index.js --version | grep -qx "bbbbb ${cli_version}"
 node scripts/runtime-license-inventory.mjs > "$temporary/runtime-license-inventory.json"

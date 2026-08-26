@@ -148,7 +148,7 @@ export async function buildCliDistributions({ root = process.cwd(), outputDirect
   const bunVersion = (await execFileAsync("bun", ["--version"])).stdout.trim();
   if (compile === defaultCompile && bunVersion !== BUN_VERSION) throw new Error(`Bun ${BUN_VERSION} is required; found ${bunVersion}`);
   const [license, notices, bunLicense, readme, skill, skillMetadata, httpHelper] = await Promise.all([
-    readFile(join(resolvedRoot, "public-core", "root", "LICENSE")),
+    readFile(join(resolvedRoot, "LICENSE")),
     readFile(join(resolvedRoot, "THIRD_PARTY_NOTICES.md")),
     readFile(join(resolvedRoot, "distribution", "cli", "BUN-LICENSE.md")),
     readFile(join(resolvedRoot, "distribution", "cli", "README.md")),
