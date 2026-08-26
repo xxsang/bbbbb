@@ -127,12 +127,12 @@ export class AppleStoreTransactionVerifier {
       payload.version !== "2.0" || !Number.isSafeInteger(payload.signedDate) || (payload.signedDate ?? -1) < 0 ||
       (payload.signedDate ?? 0) > now + MAX_CLOCK_SKEW_MS
     ) throw new AppleTransactionVerificationError("invalid");
-    if (payload.notificationType !== "REFUND" && payload.notificationType !== "REVOKE") {
+    if (payload.notificationType !== "REFUND" && payload.notificationType !== "REVOKE" && payload.notificationType !== "REFUND_REVERSED") {
       return { notificationUUID: payload.notificationUUID, notificationType: payload.notificationType, transaction: null };
     }
     if (typeof payload.data?.signedTransactionInfo !== "string") throw new AppleTransactionVerificationError("invalid");
     const transaction = await this.verify(payload.data.signedTransactionInfo, now);
-    if (transaction.status !== "revoked") throw new AppleTransactionVerificationError("invalid");
+    if ((payload.notificationType === "REFUND_REVERSED") !== (transaction.status === "active")) throw new AppleTransactionVerificationError("invalid");
     return { notificationUUID: payload.notificationUUID, notificationType: payload.notificationType, transaction };
   }
 }

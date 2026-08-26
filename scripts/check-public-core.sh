@@ -14,7 +14,9 @@ cleanup() {
 trap cleanup EXIT
 
 if [ -e "$root/LICENSE" ]; then
-  cmp "$root/scripts/public-core-LICENSE" "$root/LICENSE"
+  canonical_license="$root/public-core/root/LICENSE"
+  if [ ! -e "$canonical_license" ]; then canonical_license="$root/LICENSE"; fi
+  cmp "$canonical_license" "$root/LICENSE"
   if [ "$(git -C "$root" rev-parse --show-toplevel 2>/dev/null || true)" = "$root" ] && git -C "$root" ls-files | grep -Eq '(^|/)(node_modules|dist|\.artifacts|\.build|\.wrangler|coverage)(/|$)|(^|/)\.dev\.vars$'; then
     echo "public repository tracks local or build output" >&2
     exit 1
@@ -26,7 +28,7 @@ if [ -e "$root/LICENSE" ]; then
 else
   "$root/scripts/export-public-core.sh" "$temporary/first"
   "$root/scripts/export-public-core.sh" "$temporary/second"
-  cmp "$root/scripts/public-core-LICENSE" "$temporary/first/LICENSE"
+  cmp "$root/public-core/root/LICENSE" "$temporary/first/LICENSE"
   cmp "$temporary/first/PUBLIC_CORE_MANIFEST.json" "$temporary/second/PUBLIC_CORE_MANIFEST.json"
   node "$root/scripts/verify-public-core.mjs" "$temporary/first"
   node "$root/scripts/verify-public-core.mjs" "$temporary/second"

@@ -14,7 +14,7 @@ const required = [
   "services/relay/migrations/0004_v2_http_sources.sql", "services/relay/migrations/0005_v2_cli_sources.sql",
   "services/relay/migrations/0006_v2_source_transfers.sql",
   "services/relay/migrations/0007_v13_inbox_usage.sql",
-  "services/relay/migrations/0008_v13_entitlements.sql", "services/relay/migrations/0009_v13_app_store_notifications.sql", "services/relay/migrations/0010_v13_remove_daily_quota.sql",
+  "services/relay/migrations/0008_v13_entitlements.sql", "services/relay/migrations/0009_v13_app_store_notifications.sql", "services/relay/migrations/0010_v13_remove_daily_quota.sql", "services/relay/migrations/0011_v13_entitlement_operations.sql", "services/relay/migrations/0012_v13_app_store_reconciliation_state.sql",
   "skills/bbbbb-notify/SKILL.md", "skills/bbbbb-notify/agents/openai.yaml", "skills/bbbbb-notify/scripts/send-http.sh", "scripts/documentation-contracts.mjs", "scripts/install-bbbbb-notify-skill.sh", "scripts/public-credential-scan.mjs", "docs/guides/API.md",
   "docs/guides/INSTALLING.md", "docs/guides/INTEGRATIONS.md", "docs/guides/MACOS.md", "docs/guides/LINUX.md",
   "docs/guides/WINDOWS.md", "docs/guides/HTTP_SOURCES.md", "docs/guides/CLI_SOURCES.md", "docs/guides/SELF_HOSTING.md", "docs/guides/UPGRADING.md",
@@ -34,7 +34,7 @@ for (const path of ["assets/readme/needs-you.png", "assets/readme/completed-dark
   if (paths.includes(path)) throw new Error(`unnecessary README image exported: ${path}`);
 }
 for (const path of paths) {
-  if (/(^|\/)(apps|legacy|\.git|v1|pairing)(\/|$)/u.test(path) || /\.(swift|xcodeproj|xcworkspace)$/u.test(path)) throw new Error(`private or retired path exported: ${path}`);
+  if (/(^|\/)(apps|legacy|public-core|\.git|v1|pairing)(\/|$)/u.test(path) || /\.(swift|xcodeproj|xcworkspace)$/u.test(path)) throw new Error(`private or retired path exported: ${path}`);
   if (["scripts/export-public-core.sh", "scripts/export-public-design.mjs"].includes(path)) throw new Error(`private repository export utility included: ${path}`);
   if (["services/relay/src/v11c-proof-worker.ts", "services/relay/wrangler.v11c.jsonc", "services/relay/src/v13-d1-benchmark-worker.ts", "services/relay/wrangler.v13-benchmark.jsonc"].includes(path)) throw new Error(`development proof artifact included: ${path}`);
   if (/(^|\/)[^/]*\.owner\.[^/]*$/u.test(path)) throw new Error(`owner-only file exported: ${path}`);
@@ -70,9 +70,10 @@ await validateConceptContracts(root, [
     path: "README.md",
     concepts: [
       { name: "private update promise", patterns: [/Know the moment[\s\S]*work needs you/u] },
-      { name: "durable private inbox", patterns: [/puts that moment on your iPhone/u, /keeps the update in one private iPhone inbox/u, /Free includes every core feature/u, /Plus is optional/u] },
+      { name: "durable private inbox", patterns: [/puts that moment on your iPhone/u, /keeps the update in your inbox/u, /Free includes every core feature/u, /Plus raises the rolling limit/u] },
+      { name: "public iPhone app", patterns: [/Download bbbbb on the App Store/u, /apps\.apple\.com\/us\/app\/bbbbb-coding-agent-alerts\/id6791204016/u] },
       { name: "sender-controlled Attention and Activity", patterns: [/category is chosen by the sender/u, /Attention[\s\S]*Activity/u] },
-      { name: "HTTP-first and optional CLI chooser", patterns: [/HTTP Sources are the default/u, /No CLI required/u, /Install the CLI/u] },
+      { name: "HTTP-first and optional CLI chooser", patterns: [/Connect with a temporary QR or six-digit code/u, /No CLI required/u, /Install the CLI/u] },
       { name: "npm CLI install with release fallback", patterns: [/npm install --global @bbbbbapp\/cli/u, /GitHub Release/u] },
       { name: "honest protection boundary", patterns: [/CLI events leave encrypted/u, /HTTP events are sealed before storage/u] },
       { name: "recoverable privacy boundary", patterns: [/newest 100/u, /seven days/u, /newest 500/u, /30 days/u, /Plus/u, /missed banner/u] },

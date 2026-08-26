@@ -97,6 +97,45 @@ export function validateV2VerifiedEntitlementClaim(value: V2VerifiedEntitlementC
 
 export type V2EntitlementApplyResult = "applied" | "idempotent" | "stale" | "inbox_unavailable";
 export type V2EntitlementNotificationApplyResult = Exclude<V2EntitlementApplyResult, "inbox_unavailable"> | "ignored";
+export type V2EntitlementReconciliationResult = Exclude<V2EntitlementApplyResult, "inbox_unavailable">;
+
+export const V2_ENTITLEMENT_OPERATION_ACTIONS = ["suspend", "resume", "sandbox_reset"] as const;
+export type V2EntitlementOperationAction = (typeof V2_ENTITLEMENT_OPERATION_ACTIONS)[number];
+
+export interface V2EntitlementOperation {
+  readonly operationId: string;
+  readonly action: V2EntitlementOperationAction;
+  readonly environment: V2EntitlementEnvironment;
+  readonly inboxId: string;
+  readonly targetFingerprint: string;
+  readonly actorFingerprint: string;
+  readonly reasonCode: string;
+  readonly occurredAt: number;
+  readonly expiresAt: number | null;
+}
+
+export type V2EntitlementOperationResult = "applied" | "idempotent" | "idempotency_conflict" | "target_unavailable" | "environment_mismatch";
+
+const OPERATION_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
+const OPERATION_INBOX_ID = /^[A-Za-z0-9_-]{16,128}$/u;
+const OPERATION_FINGERPRINT = /^[A-Za-z0-9_-]{16,64}$/u;
+const OPERATION_REASON = /^[a-z][a-z0-9_]{2,63}$/u;
+export function validateV2EntitlementOperation(value: V2EntitlementOperation): V2EntitlementOperation {
+  if (
+    !OPERATION_UUID.test(value.operationId) ||
+    !V2_ENTITLEMENT_OPERATION_ACTIONS.includes(value.action) ||
+    !V2_ENTITLEMENT_ENVIRONMENTS.includes(value.environment) ||
+    !OPERATION_INBOX_ID.test(value.inboxId) ||
+    !OPERATION_FINGERPRINT.test(value.targetFingerprint) ||
+    !OPERATION_FINGERPRINT.test(value.actorFingerprint) ||
+    !OPERATION_REASON.test(value.reasonCode) ||
+    !Number.isSafeInteger(value.occurredAt) || value.occurredAt < 0 ||
+    (value.expiresAt !== null && (!Number.isSafeInteger(value.expiresAt) || value.expiresAt <= value.occurredAt)) ||
+    (value.action !== "suspend" && value.expiresAt !== null) ||
+    (value.action === "sandbox_reset" && value.environment !== "sandbox")
+  ) throw new TypeError("entitlement operation is invalid");
+  return structuredClone(value);
+}
 
 export type V2EventPutResult =
   | { readonly kind: "inserted" }
@@ -139,6 +178,10 @@ export interface V2SourceStore {
   getUsage(inboxId: string, now: number, policy: V2TierPolicy): Promise<ProtocolV2UsageSnapshot>;
   applyEntitlement(claim: V2VerifiedEntitlementClaim, inboxId: string | null): Promise<V2EntitlementApplyResult>;
   applyEntitlementNotification(notificationUUID: string, notificationType: string, receivedAt: number, claim: V2VerifiedEntitlementClaim | null): Promise<V2EntitlementNotificationApplyResult>;
-  getEntitlementTier(inboxId: string): Promise<V2Tier>;
+  reconcileEntitlement(claim: V2VerifiedEntitlementClaim): Promise<V2EntitlementReconciliationResult>;
+  getAppStoreReconciliationCheckpoint(environment: Exclude<V2EntitlementEnvironment, "xcode">): Promise<number | null>;
+  advanceAppStoreReconciliationCheckpoint(environment: Exclude<V2EntitlementEnvironment, "xcode">, checkpointAt: number, updatedAt: number): Promise<void>;
+  applyEntitlementOperation(operation: V2EntitlementOperation): Promise<V2EntitlementOperationResult>;
+  getEntitlementTier(inboxId: string, now?: number): Promise<V2Tier>;
   incrementRateLimit(scope: string, windowStart: number): Promise<number>;
 }

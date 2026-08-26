@@ -18,7 +18,7 @@ const inboxId = "inbox_primary_0001";
 const readCredential = "read_credential_that_is_long_enough_0001";
 const digest = (value: string) => createHash("sha256").update(value).digest("base64url");
 
-type EntitlementDependencies = Pick<V2HttpSourceHandlerDependencies, "verifyEntitlementTransaction" | "verifyEntitlementNotification" | "deriveEntitlementId">;
+type EntitlementDependencies = Pick<V2HttpSourceHandlerDependencies, "verifyEntitlementTransaction" | "verifyEntitlementNotification" | "deriveEntitlementId" | "authorizeEntitlementOperator">;
 
 async function harness(tier: V2Tier = "free", entitlement?: EntitlementDependencies) {
   const store = new MemoryV2SourceStore();
@@ -40,7 +40,7 @@ async function harness(tier: V2Tier = "free", entitlement?: EntitlementDependenc
     log: (entry) => { logs.push(entry); },
     resolveTier: tier === "plus"
       ? async () => tier
-      : (requestedInboxId) => store.getEntitlementTier(requestedInboxId),
+      : (requestedInboxId, requestedAt) => store.getEntitlementTier(requestedInboxId, requestedAt),
     ...(entitlement ?? {}),
   });
   const request = (path: string, init: RequestInit = {}) => handler(new Request(`${relay}${path}`, init));
@@ -184,6 +184,54 @@ test("App Store notification endpoint fails closed for invalid, unavailable, and
   assert.equal((await retryable.request("/v2/app-store/notifications", { method: "POST", headers: { "content-type": "application/json" }, body })).status, 503);
   assert.equal(await retryable.store.getEntitlementTier(inboxId), "plus");
   assert.equal((await retryable.request("/v2/app-store/notifications", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ signedPayload: "invalid" }) })).status, 400);
+});
+
+test("operator entitlement controls are authenticated, audited, and Sandbox-reset only", async () => {
+  const value = await harness("free", {
+    authorizeEntitlementOperator: async (token) => token === "operator_key_that_is_long_enough_0001" ? "operator_fingerprint_000000000001" : null,
+  });
+  await value.store.applyEntitlement({
+    entitlementId: "derived_entitlement_AAAAAAAAAAAAA",
+    productId: "org.shenren.bbbbb.plus",
+    environment: "sandbox",
+    status: "active",
+    stateChangedAt: Date.parse("2026-07-19T07:59:00Z"),
+    verifiedAt: Date.parse("2026-07-19T07:59:30Z"),
+  }, inboxId);
+  const path = "/v2/operator/entitlements";
+  const body = JSON.stringify({ version: 1, action: "sandbox_reset", environment: "sandbox", inboxId, reason: "repeat_purchase_test" });
+  const init = (authorization?: string, overrideBody = body): RequestInit => ({
+    method: "POST",
+    headers: {
+      ...(authorization ? { authorization: `Bearer ${authorization}` } : {}),
+      "content-type": "application/json",
+      "idempotency-key": "123e4567-e89b-42d3-a456-426614174010",
+    },
+    body: overrideBody,
+  });
+  assert.equal((await value.request(path, init())).status, 401);
+  assert.equal((await value.request(path, init("wrong_operator_key_that_is_long_enough"))).status, 401);
+  assert.equal((await value.request(path, init("operator_key_that_is_long_enough_0001", "{"))).status, 400);
+  assert.equal((await value.request(path, init("operator_key_that_is_long_enough_0001", JSON.stringify({
+    version: 1, action: "resume", environment: "sandbox", inboxId, reason: "review_complete", expiresAt: "2026-07-20T08:00:00.000Z",
+  })))).status, 400);
+  const invalidProduction = await value.request(path, init("operator_key_that_is_long_enough_0001", JSON.stringify({
+    version: 1, action: "sandbox_reset", environment: "production", inboxId, reason: "repeat_purchase_test",
+  })));
+  assert.equal(invalidProduction.status, 400);
+  const reset = await value.request(path, init("operator_key_that_is_long_enough_0001"));
+  assert.deepEqual(await reset.json(), { version: 1, result: "applied" });
+  assert.equal(await value.store.getEntitlementTier(inboxId), "free");
+  assert.equal(value.store.entitlementOperationAudit.size, 1);
+  assert.deepEqual(await (await value.request(path, init("operator_key_that_is_long_enough_0001"))).json(), { version: 1, result: "idempotent" });
+  const conflict = await value.request(path, init("operator_key_that_is_long_enough_0001", JSON.stringify({
+    version: 1, action: "sandbox_reset", environment: "sandbox", inboxId, reason: "different_reason",
+  })));
+  assert.equal(conflict.status, 409);
+  assert.deepEqual(await conflict.json(), { error: "idempotency_conflict" });
+  const evidence = JSON.stringify(value.logs);
+  assert.equal(evidence.includes(inboxId), false);
+  assert.equal(evidence.includes("operator_key"), false);
 });
 
 test("usage is Inbox-authorized and reflects only the relay-resolved tier", async () => {

@@ -1,5 +1,5 @@
 import { validateProtocolV2Envelope, validateProtocolV2UsageSnapshot, type ProtocolV2Envelope, type ProtocolV2UsageSnapshot } from "@bbbbbapp/protocol";
-import { V2_DAY_MS, V2_ROLLING_WINDOW_MS, validateV2VerifiedEntitlementClaim, type V2AddSourceSession, type V2EntitlementApplyResult, type V2EntitlementNotificationApplyResult, type V2EventPutResult, type V2Inbox, type V2Source, type V2SourceStore, type V2SourceTransferSession, type V2TierPolicy, type V2VerifiedEntitlementClaim } from "./source-store.js";
+import { V2_DAY_MS, V2_ROLLING_WINDOW_MS, validateV2EntitlementOperation, validateV2VerifiedEntitlementClaim, type V2AddSourceSession, type V2EntitlementApplyResult, type V2EntitlementEnvironment, type V2EntitlementNotificationApplyResult, type V2EntitlementOperation, type V2EntitlementOperationResult, type V2EntitlementReconciliationResult, type V2EventPutResult, type V2Inbox, type V2Source, type V2SourceStore, type V2SourceTransferSession, type V2TierPolicy, type V2VerifiedEntitlementClaim } from "./source-store.js";
 
 interface InboxRow { inbox_id: string; public_key: string; read_credential_hash: string; created_at: number }
 interface SourceRow { source_id: string; inbox_id: string; name: string; method: "http" | "cli"; credential_hash: string; enabled: number; created_at: number; updated_at: number; last_success_at: number | null }
@@ -34,6 +34,17 @@ export const V2_ENTITLEMENT_INSERT_BINDING_SQL = `INSERT INTO v2_entitlement_bin
   SELECT ?, ?, ? WHERE EXISTS (
     SELECT 1 FROM v2_entitlements WHERE entitlement_id = ? AND product_id = ? AND environment = ? AND status = 'active' AND state_changed_at = ?
   )`;
+export const V2_ENTITLEMENT_UPSERT_RESTORE_TARGET_SQL = `INSERT INTO v2_entitlement_restore_targets (entitlement_id, inbox_id, updated_at)
+  SELECT ?, ?, ? WHERE EXISTS (
+    SELECT 1 FROM v2_entitlements WHERE entitlement_id = ? AND product_id = ? AND environment = ? AND status = 'active' AND state_changed_at = ?
+  )
+  ON CONFLICT(entitlement_id) DO UPDATE SET inbox_id = excluded.inbox_id, updated_at = excluded.updated_at`;
+export const V2_ENTITLEMENT_RESTORE_BINDING_SQL = `INSERT OR IGNORE INTO v2_entitlement_bindings (entitlement_id, inbox_id, bound_at)
+  SELECT target.entitlement_id, target.inbox_id, ?
+  FROM v2_entitlement_restore_targets AS target
+  INNER JOIN v2_entitlements AS entitlement ON entitlement.entitlement_id = target.entitlement_id
+  WHERE target.entitlement_id = ? AND entitlement.product_id = ? AND entitlement.environment = ?
+    AND entitlement.status = 'active' AND entitlement.state_changed_at = ?`;
 
 const inboxFromRow = (row: InboxRow): V2Inbox => ({ inboxId: row.inbox_id, publicKey: row.public_key, readCredentialHash: row.read_credential_hash, createdAt: row.created_at });
 const sourceFromRow = (row: SourceRow): V2Source => ({ sourceId: row.source_id, inboxId: row.inbox_id, name: row.name, method: row.method, credentialHash: row.credential_hash, enabled: row.enabled === 1, createdAt: row.created_at, updatedAt: row.updated_at, lastSuccessAt: row.last_success_at });
@@ -154,6 +165,11 @@ export class D1V2SourceStore implements V2SourceStore {
     await this.measuredRun("cleanup.app_store_notifications_cap", this.database.prepare(`DELETE FROM v2_app_store_notifications WHERE notification_uuid IN (
       SELECT notification_uuid FROM v2_app_store_notifications ORDER BY received_at DESC, notification_uuid DESC LIMIT -1 OFFSET 10000
     )`));
+    await this.measuredRun("cleanup.entitlement_controls", this.database.prepare("DELETE FROM v2_entitlement_controls WHERE expires_at IS NOT NULL AND expires_at <= ?").bind(now));
+    await this.measuredRun("cleanup.entitlement_operation_audit_age", this.database.prepare("DELETE FROM v2_entitlement_operation_audit WHERE occurred_at <= ?").bind(now - 365 * V2_DAY_MS));
+    await this.measuredRun("cleanup.entitlement_operation_audit_cap", this.database.prepare(`DELETE FROM v2_entitlement_operation_audit WHERE operation_id IN (
+      SELECT operation_id FROM v2_entitlement_operation_audit ORDER BY occurred_at DESC, operation_id DESC LIMIT -1 OFFSET 10000
+    )`));
   }
   async getSource(sourceId: string): Promise<V2Source | null> {
     const row = await this.database.prepare("SELECT * FROM v2_sources WHERE source_id = ? LIMIT 1").bind(sourceId).first<SourceRow>();
@@ -256,9 +272,7 @@ export class D1V2SourceStore implements V2SourceStore {
   }
   async applyEntitlement(claim: V2VerifiedEntitlementClaim, inboxId: string | null): Promise<V2EntitlementApplyResult> {
     claim = validateV2VerifiedEntitlementClaim(claim);
-    if (claim.status === "active") {
-      if (inboxId === null || !await this.getInbox(inboxId)) return "inbox_unavailable";
-    }
+    if (claim.status === "active" && inboxId !== null && !await this.getInbox(inboxId)) return "inbox_unavailable";
     const previous = await this.database.prepare("SELECT status, state_changed_at, product_id, environment FROM v2_entitlements WHERE entitlement_id = ? LIMIT 1")
       .bind(claim.entitlementId).first<{ status: string; state_changed_at: number; product_id: string; environment: string }>();
     if (previous && (previous.product_id !== claim.productId || previous.environment !== claim.environment)) return "stale";
@@ -266,13 +280,15 @@ export class D1V2SourceStore implements V2SourceStore {
     const currentBinding = await this.database.prepare("SELECT inbox_id FROM v2_entitlement_bindings WHERE entitlement_id = ? LIMIT 1")
       .bind(claim.entitlementId).first<{ inbox_id: string }>();
     const idempotent = previous?.status === claim.status && previous.state_changed_at === claim.stateChangedAt && (claim.status === "revoked" || currentBinding?.inbox_id === inboxId);
-    const statements = [
-      this.database.prepare(V2_ENTITLEMENT_UPSERT_SQL)
-        .bind(claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt, claim.verifiedAt),
-      this.database.prepare(V2_ENTITLEMENT_DELETE_BINDINGS_SQL)
-        .bind(claim.entitlementId, inboxId ?? "", claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt),
-    ];
+    const statements = [this.database.prepare(V2_ENTITLEMENT_UPSERT_SQL)
+      .bind(claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt, claim.verifiedAt)];
+    if (claim.status === "revoked") statements.push(this.database.prepare(V2_ENTITLEMENT_DELETE_BINDINGS_SQL)
+      .bind(claim.entitlementId, "", claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt));
     if (claim.status === "active" && inboxId !== null) {
+      statements.push(this.database.prepare(V2_ENTITLEMENT_DELETE_BINDINGS_SQL)
+        .bind(claim.entitlementId, inboxId, claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt));
+      statements.push(this.database.prepare(V2_ENTITLEMENT_UPSERT_RESTORE_TARGET_SQL)
+        .bind(claim.entitlementId, inboxId, claim.verifiedAt, claim.entitlementId, claim.productId, claim.environment, claim.stateChangedAt));
       statements.push(this.database.prepare(V2_ENTITLEMENT_INSERT_BINDING_SQL)
         .bind(claim.entitlementId, inboxId, claim.verifiedAt, claim.entitlementId, claim.productId, claim.environment, claim.stateChangedAt));
     }
@@ -285,7 +301,10 @@ export class D1V2SourceStore implements V2SourceStore {
   }
   async applyEntitlementNotification(notificationUUID: string, notificationType: string, receivedAt: number, claim: V2VerifiedEntitlementClaim | null): Promise<V2EntitlementNotificationApplyResult> {
     if (claim !== null) claim = validateV2VerifiedEntitlementClaim(claim);
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(notificationUUID) || notificationType.length < 1 || notificationType.length > 64 || !Number.isSafeInteger(receivedAt) || receivedAt < 0 || (claim !== null && (claim.status !== "revoked" || (notificationType !== "REFUND" && notificationType !== "REVOKE")))) {
+    const validTransition = claim === null ||
+      (claim.status === "revoked" && (notificationType === "REFUND" || notificationType === "REVOKE")) ||
+      (claim.status === "active" && notificationType === "REFUND_REVERSED");
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(notificationUUID) || notificationType.length < 1 || notificationType.length > 64 || !Number.isSafeInteger(receivedAt) || receivedAt < 0 || !validTransition) {
       throw new TypeError("verified entitlement notification is invalid");
     }
     const duplicate = await this.database.prepare("SELECT 1 FROM v2_app_store_notifications WHERE notification_uuid = ? LIMIT 1").bind(notificationUUID).first();
@@ -300,26 +319,117 @@ export class D1V2SourceStore implements V2SourceStore {
       .bind(claim.entitlementId).first<{ status: string; state_changed_at: number; product_id: string; environment: string }>();
     const stale = previous !== null && previous !== undefined && (
       previous.product_id !== claim.productId || previous.environment !== claim.environment ||
-      previous.state_changed_at > claim.stateChangedAt
+      previous.state_changed_at > claim.stateChangedAt ||
+      (previous.state_changed_at === claim.stateChangedAt && previous.status === "revoked" && claim.status === "active")
     );
     const idempotent = previous?.product_id === claim.productId && previous.environment === claim.environment &&
-      previous.status === "revoked" && previous.state_changed_at === claim.stateChangedAt;
-    const results = await this.database.batch([
+      previous.status === claim.status && previous.state_changed_at === claim.stateChangedAt;
+    const statements = [
       this.database.prepare("INSERT OR IGNORE INTO v2_app_store_notifications (notification_uuid, notification_type, received_at, state_changed_at) VALUES (?, ?, ?, ?)")
         .bind(notificationUUID, notificationType, receivedAt, claim.stateChangedAt),
       this.database.prepare(V2_ENTITLEMENT_UPSERT_SQL)
         .bind(claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt, claim.verifiedAt),
-      this.database.prepare(V2_ENTITLEMENT_DELETE_BINDINGS_SQL)
-        .bind(claim.entitlementId, "", claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt),
-    ]);
+    ];
+    if (claim.status === "revoked") statements.push(this.database.prepare(V2_ENTITLEMENT_DELETE_BINDINGS_SQL)
+      .bind(claim.entitlementId, "", claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt));
+    else statements.push(this.database.prepare(V2_ENTITLEMENT_RESTORE_BINDING_SQL)
+      .bind(claim.verifiedAt, claim.entitlementId, claim.productId, claim.environment, claim.stateChangedAt));
+    const results = await this.database.batch(statements);
     if (!results.every((result) => result.success)) throw new Error("entitlement notification persistence failed");
     if (Number(results[0]?.meta.changes ?? 0) !== 1) return "idempotent";
     return stale ? "stale" : idempotent ? "idempotent" : "applied";
   }
-  async getEntitlementTier(inboxId: string): Promise<"free" | "plus"> {
+  async reconcileEntitlement(claim: V2VerifiedEntitlementClaim): Promise<V2EntitlementReconciliationResult> {
+    claim = validateV2VerifiedEntitlementClaim(claim);
+    const previous = await this.database.prepare("SELECT status, state_changed_at, product_id, environment FROM v2_entitlements WHERE entitlement_id = ? LIMIT 1")
+      .bind(claim.entitlementId).first<{ status: string; state_changed_at: number; product_id: string; environment: string }>();
+    if (previous && (previous.product_id !== claim.productId || previous.environment !== claim.environment)) return "stale";
+    if (previous && (previous.state_changed_at > claim.stateChangedAt || (previous.state_changed_at === claim.stateChangedAt && previous.status === "revoked" && claim.status === "active"))) return "stale";
+    const currentBinding = await this.database.prepare(`SELECT binding.inbox_id, target.inbox_id AS target_inbox_id
+      FROM v2_entitlement_restore_targets AS target
+      LEFT JOIN v2_entitlement_bindings AS binding ON binding.entitlement_id = target.entitlement_id
+      WHERE target.entitlement_id = ? LIMIT 1`).bind(claim.entitlementId).first<{ inbox_id: string | null; target_inbox_id: string }>();
+    const idempotent = previous?.status === claim.status && previous.state_changed_at === claim.stateChangedAt && (
+      claim.status === "revoked" || currentBinding === null || currentBinding === undefined || currentBinding.inbox_id === currentBinding.target_inbox_id
+    );
+    const statements = [this.database.prepare(V2_ENTITLEMENT_UPSERT_SQL)
+      .bind(claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt, claim.verifiedAt)];
+    if (claim.status === "revoked") statements.push(this.database.prepare(V2_ENTITLEMENT_DELETE_BINDINGS_SQL)
+      .bind(claim.entitlementId, "", claim.entitlementId, claim.productId, claim.environment, claim.status, claim.stateChangedAt));
+    else statements.push(this.database.prepare(V2_ENTITLEMENT_RESTORE_BINDING_SQL)
+      .bind(claim.verifiedAt, claim.entitlementId, claim.productId, claim.environment, claim.stateChangedAt));
+    const results = await this.database.batch(statements);
+    if (!results.every((result) => result.success)) throw new Error("entitlement reconciliation persistence failed");
+    return idempotent ? "idempotent" : "applied";
+  }
+  async getAppStoreReconciliationCheckpoint(environment: Exclude<V2EntitlementEnvironment, "xcode">): Promise<number | null> {
+    const row = await this.database.prepare("SELECT checkpoint_at FROM v2_app_store_reconciliation_state WHERE environment = ? LIMIT 1")
+      .bind(environment).first<{ checkpoint_at: number }>();
+    return row?.checkpoint_at ?? null;
+  }
+  async advanceAppStoreReconciliationCheckpoint(environment: Exclude<V2EntitlementEnvironment, "xcode">, checkpointAt: number, updatedAt: number): Promise<void> {
+    if (!Number.isSafeInteger(checkpointAt) || checkpointAt < 0 || !Number.isSafeInteger(updatedAt) || updatedAt < checkpointAt) throw new TypeError("App Store reconciliation checkpoint is invalid");
+    await this.measuredRun("app_store_reconciliation.advance_checkpoint", this.database.prepare(`INSERT INTO v2_app_store_reconciliation_state (environment, checkpoint_at, updated_at) VALUES (?, ?, ?)
+      ON CONFLICT(environment) DO UPDATE SET checkpoint_at = excluded.checkpoint_at, updated_at = excluded.updated_at
+      WHERE excluded.checkpoint_at > v2_app_store_reconciliation_state.checkpoint_at`).bind(environment, checkpointAt, updatedAt));
+  }
+  async applyEntitlementOperation(operationValue: V2EntitlementOperation): Promise<V2EntitlementOperationResult> {
+    const operation = validateV2EntitlementOperation(operationValue);
+    const duplicate = await this.database.prepare(`SELECT action, environment, target_fingerprint, actor_fingerprint, reason_code, occurred_at, expires_at
+      FROM v2_entitlement_operation_audit WHERE operation_id = ? LIMIT 1`).bind(operation.operationId).first<{
+        action: string; environment: string; target_fingerprint: string; actor_fingerprint: string; reason_code: string; occurred_at: number; expires_at: number | null;
+      }>();
+    if (duplicate) return duplicate.action === operation.action && duplicate.environment === operation.environment &&
+      duplicate.target_fingerprint === operation.targetFingerprint && duplicate.actor_fingerprint === operation.actorFingerprint &&
+      duplicate.reason_code === operation.reasonCode && duplicate.occurred_at === operation.occurredAt && duplicate.expires_at === operation.expiresAt
+      ? "idempotent" : "idempotency_conflict";
+    const binding = await this.database.prepare(`SELECT entitlement.entitlement_id, entitlement.environment
+      FROM v2_entitlement_bindings AS binding
+      INNER JOIN v2_entitlements AS entitlement ON entitlement.entitlement_id = binding.entitlement_id
+      WHERE binding.inbox_id = ? LIMIT 1`).bind(operation.inboxId).first<{ entitlement_id: string; environment: string }>();
+    const control = await this.database.prepare("SELECT environment FROM v2_entitlement_controls WHERE inbox_id = ? LIMIT 1").bind(operation.inboxId).first<{ environment: string }>();
+    if (operation.action === "suspend") {
+      if (!binding) return "target_unavailable";
+      if (binding.environment !== operation.environment) return "environment_mismatch";
+    } else if (operation.action === "resume") {
+      if (!control) return "target_unavailable";
+      if (control.environment !== operation.environment) return "environment_mismatch";
+    } else {
+      if (operation.environment !== "sandbox") throw new TypeError("sandbox reset requires the Sandbox environment");
+      if (!binding) return "target_unavailable";
+      if (binding.environment !== "sandbox") return "environment_mismatch";
+    }
+    const statements: D1PreparedStatement[] = [];
+    if (operation.action === "suspend") statements.push(this.database.prepare(`INSERT INTO v2_entitlement_controls
+      (inbox_id, environment, status, reason_code, actor_fingerprint, changed_at, expires_at) VALUES (?, ?, 'suspended', ?, ?, ?, ?)
+      ON CONFLICT(inbox_id) DO UPDATE SET environment = excluded.environment, status = excluded.status, reason_code = excluded.reason_code,
+        actor_fingerprint = excluded.actor_fingerprint, changed_at = excluded.changed_at, expires_at = excluded.expires_at`)
+      .bind(operation.inboxId, operation.environment, operation.reasonCode, operation.actorFingerprint, operation.occurredAt, operation.expiresAt));
+    if (operation.action === "resume") statements.push(this.database.prepare("DELETE FROM v2_entitlement_controls WHERE inbox_id = ? AND environment = ?")
+      .bind(operation.inboxId, operation.environment));
+    if (operation.action === "sandbox_reset") {
+      statements.push(this.database.prepare("DELETE FROM v2_entitlement_bindings WHERE entitlement_id = ? AND inbox_id = ?")
+        .bind(binding!.entitlement_id, operation.inboxId));
+      statements.push(this.database.prepare("DELETE FROM v2_entitlement_restore_targets WHERE entitlement_id = ? AND inbox_id = ?")
+        .bind(binding!.entitlement_id, operation.inboxId));
+      statements.push(this.database.prepare("DELETE FROM v2_entitlement_controls WHERE inbox_id = ? AND environment = 'sandbox'")
+        .bind(operation.inboxId));
+    }
+    statements.push(this.database.prepare(`INSERT INTO v2_entitlement_operation_audit
+      (operation_id, action, environment, target_fingerprint, actor_fingerprint, reason_code, occurred_at, expires_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(operation.operationId, operation.action, operation.environment, operation.targetFingerprint, operation.actorFingerprint, operation.reasonCode, operation.occurredAt, operation.expiresAt));
+    const results = await this.database.batch(statements);
+    if (!results.every((result) => result.success)) throw new Error("entitlement operation persistence failed");
+    return "applied";
+  }
+  async getEntitlementTier(inboxId: string, now = Date.now()): Promise<"free" | "plus"> {
     const active = await this.database.prepare(`SELECT 1 FROM v2_entitlement_bindings AS binding
       INNER JOIN v2_entitlements AS entitlement ON entitlement.entitlement_id = binding.entitlement_id
-      WHERE binding.inbox_id = ? AND entitlement.status = 'active' LIMIT 1`).bind(inboxId).first();
+      WHERE binding.inbox_id = ? AND entitlement.status = 'active'
+        AND NOT EXISTS (SELECT 1 FROM v2_entitlement_controls AS control WHERE control.inbox_id = binding.inbox_id
+          AND control.status = 'suspended' AND (control.expires_at IS NULL OR control.expires_at > ?))
+      LIMIT 1`).bind(inboxId, now).first();
     return active ? "plus" : "free";
   }
   async incrementRateLimit(scope: string, windowStart: number): Promise<number> {

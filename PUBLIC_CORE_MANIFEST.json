@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "3ab0fdaa79c0e45d436307395d1bc8cb8ea180fac0bd8a8173636a4a4124d27b",
+  "treeSha256": "e52c4e63188e8ce435d820d6612e1adf75bbecfd42857f1cf3f7c532a3e2e418",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -40,7 +40,7 @@
     },
     {
       "path": "docs/guides/API.md",
-      "sha256": "6ee727cc409eca3eaa58c0825e900084a791224025e49c947360b628bca3ac8a"
+      "sha256": "286ab996257cc2e37c2c1ecf1ccf23a8ab3b183f21cba9a6f126aa1af43b07a5"
     },
     {
       "path": "docs/guides/CLI_SOURCES.md",
@@ -84,7 +84,7 @@
     },
     {
       "path": "docs/launch/OPERATIONS.md",
-      "sha256": "54c5686adda3a0094e8f83af2e16b38891308def1153128e5de4a9c6c8936893"
+      "sha256": "ce51c83a09c353e7977caf01715084a434bdfdd5bc5b67cec844f12147cefecf"
     },
     {
       "path": "docs/launch/TRUST.md",
@@ -128,11 +128,11 @@
     },
     {
       "path": "packages/cli/src/cli-source-setup.ts",
-      "sha256": "591514e19faf5e650a49c20ec9b253e8df9243114d8cbd4ecac1232735c1e102"
+      "sha256": "4f7c0ccd1ea2bd3ab38ca3410227e0d56325eadd6c7f1e46cb10713039e317ef"
     },
     {
       "path": "packages/cli/src/http-source-setup.ts",
-      "sha256": "47e0cdbf93f8fd1f24d213f9bf040ff90bb666b9c7d0d165388d953344229a3d"
+      "sha256": "9deb0b660393f37e9aff9dd789867f119855120e806d054c76d2c41f363ee929"
     },
     {
       "path": "packages/cli/src/http-source-store.ts",
@@ -141,6 +141,10 @@
     {
       "path": "packages/cli/src/index.ts",
       "sha256": "ed10e4c99eb617e2dbc34e96982b68c67e7a4948ac23c118e24e37011d506d8d"
+    },
+    {
+      "path": "packages/cli/src/setup-session-client.ts",
+      "sha256": "a9407876f25e70db29be2984789270cafad9b27bc674e51b8a755da01c337633"
     },
     {
       "path": "packages/cli/src/source-profile.ts",
@@ -232,15 +236,15 @@
     },
     {
       "path": "README.md",
-      "sha256": "e672998f6d16adc5c77bf9a3d70e5fcfc259dad5b534670689cf78a5167b25f0"
+      "sha256": "ddf7af235252ee154c931f9bc26077daf0a8e4e2e9e4eb8d4a01f58c3c65db5b"
     },
     {
       "path": "release/version.json",
-      "sha256": "eb219e6cfd959752aa60c150a8803e3b3057dbbd7208d513eb2b21dc85145720"
+      "sha256": "65807d408efd476925538b606912fba8e531ca0889fc8a1dcbfca0b59c2d9b97"
     },
     {
       "path": "scripts/check-public-core.sh",
-      "sha256": "a507514dc70efc08665e2ea33c766285a09915ddf23f6d035dbbb8a6a54c8efd"
+      "sha256": "457685159df99499adb47e08ed6baa833b046cec31e4dfbc0c840a682279f8d7"
     },
     {
       "path": "scripts/create-export-manifest.mjs",
@@ -255,32 +259,12 @@
       "sha256": "13467fe5366f187096037db3331804d6de29b28b82afbc8fe11aa652da3109c0"
     },
     {
-      "path": "scripts/public-core-ci.yml",
-      "sha256": "1e46eb1347b2517ea0acc005d93679a872e2efba371a2a1143d46af6b8c21c52"
-    },
-    {
-      "path": "scripts/public-core-gitignore",
-      "sha256": "b06a99847bb2bdb9520b3f5581d762b0927692284c50e22d3165f5253d155f74"
-    },
-    {
-      "path": "scripts/public-core-LICENSE",
-      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
-    },
-    {
-      "path": "scripts/public-core-package.json",
-      "sha256": "b96da2f7422a006ee72ea3fb6e547c6c91b366f981ac3b2a9c9a4ea12798df15"
-    },
-    {
-      "path": "scripts/public-core-README.md",
-      "sha256": "e672998f6d16adc5c77bf9a3d70e5fcfc259dad5b534670689cf78a5167b25f0"
-    },
-    {
       "path": "scripts/public-credential-scan.mjs",
-      "sha256": "fdadf20c1fbab5dc218b0ceef268b5f2c4101e817c676cbc78569edbe3a517aa"
+      "sha256": "684fceac787d63efe5c1e3e0e20a21f9b6fe2db2c6614e19f8cdbe8a3b9818c9"
     },
     {
       "path": "scripts/release/build-cli-distributions.mjs",
-      "sha256": "646c9213111e55a69f029f6db43f4f5b9b6681ba60abdadf9a26710fc61a6eda"
+      "sha256": "cc4a9ea4fd95a0f45554bb0c5d9b63180a9acb83750866b8e4e2f937f47725ee"
     },
     {
       "path": "scripts/release/check-cli-distributions.sh",
@@ -292,7 +276,7 @@
     },
     {
       "path": "scripts/release/validate-npm-pack.mjs",
-      "sha256": "e938643ead70132abb9c6ea9b3a98819832d3cece3ccd7d7c2cbd8110dc275d8"
+      "sha256": "ab4eb618f7907869723025ec63cf6f64f872cdba8c8af9a5684f671363ed1cca"
     },
     {
       "path": "scripts/release/version-contract.mjs",
@@ -304,7 +288,7 @@
     },
     {
       "path": "scripts/verify-public-core.mjs",
-      "sha256": "63606e4d199579e5c09d7151a37dcab8c60bd40ec32bfc3f0d24e3319f0aaf81"
+      "sha256": "c04d4579babab7d47a19fcfb474e6ce1f2c32260f62d899df0ae98e64ffdf6c9"
     },
     {
       "path": "SECURITY.md",
@@ -343,12 +327,20 @@
       "sha256": "aa43acaee9e3ac372340ad9d2802193ebd9b6e9a08d2f1c4d6a35c6e9e2e3d51"
     },
     {
+      "path": "services/relay/migrations/0011_v13_entitlement_operations.sql",
+      "sha256": "581256bfe99cad2411b2ed6c03897c1f6db42b999b07b9778389c18d288e11d2"
+    },
+    {
+      "path": "services/relay/migrations/0012_v13_app_store_reconciliation_state.sql",
+      "sha256": "ddc6c5e53499540a8353ee806bdaddf026e514fcab22d2bd63a9961c25191db3"
+    },
+    {
       "path": "services/relay/package.json",
       "sha256": "c9bc7bd36dbb300f0120c3c28ea71592293a961d44b006527f66a1dc22e7ea1e"
     },
     {
       "path": "services/relay/README.md",
-      "sha256": "59476946b9e6d41a6cfcbccd88a94599d99563ff66ef2c7db741cb2aacca1799"
+      "sha256": "339e98b3272881b8b075794f0598891b97a23f1c377ef5c87ab080827f6f3a4f"
     },
     {
       "path": "services/relay/src/apns/base64url.ts",
@@ -372,11 +364,15 @@
     },
     {
       "path": "services/relay/src/index.ts",
-      "sha256": "27ad371dd22cf59492d3a951742ea283342b0ed7563c007a7ec50afebfc5e4f4"
+      "sha256": "46dba70c9d363a74046447d678998a9e4dee2695040ad164245ba57b7672b277"
     },
     {
       "path": "services/relay/src/trust-surfaces.ts",
       "sha256": "8644fef0a87e9fc3d04c482c1ef34714b418c802cbc099d1296725548e3943fc"
+    },
+    {
+      "path": "services/relay/src/v2/app-store-reconciliation.ts",
+      "sha256": "3d9eac9014621adc8cd58b8205e9b20387ac5e0c49fbe90f5fd1e1fc16637e5b"
     },
     {
       "path": "services/relay/src/v2/apple-root-certificates.ts",
@@ -384,23 +380,31 @@
     },
     {
       "path": "services/relay/src/v2/apple-store-verifier.ts",
-      "sha256": "bcf40171ddcb2a6c2432a9fdd9574c456d97122e296bc2f32d1dbd4ca4067084"
+      "sha256": "dc2d326db4489c9e0cbd8275dcc009697d0de4cbd2f56686a9ee8e1022e40cc3"
     },
     {
       "path": "services/relay/src/v2/d1-source-store.ts",
-      "sha256": "7b0eccad5707767ef048cbee64bbb282db2e50a8225699f3f85f13f5293e5403"
+      "sha256": "1208e260bdeee14bc650ba0cb84f4827be5bdc244202ea9e618705d9b2d018de"
     },
     {
       "path": "services/relay/src/v2/device-store.ts",
       "sha256": "a4c117354406664b3ddf98eb2afd7aa7cdab6d76b82b0d5aebdfc7996b77d9a6"
     },
     {
+      "path": "services/relay/src/v2/entitlement-lifecycle.ts",
+      "sha256": "4082c1dc452fc3610ca87cc10a84f93c9b8869bb498768f2be1f0a0023c33496"
+    },
+    {
+      "path": "services/relay/src/v2/http-entitlement-routes.ts",
+      "sha256": "eca60e58aa6898d07d5638de011127020494ad44b0d55b2c758423a34d47bc96"
+    },
+    {
       "path": "services/relay/src/v2/http-source-handler.ts",
-      "sha256": "5e89ed75c4596e387e171166fafb26c47b04279fd561bf51e0f605856870e11c"
+      "sha256": "14697ac058aa97a3e4d90b8e896f8eaa5866edb11b684b145da4f38993d9605a"
     },
     {
       "path": "services/relay/src/v2/memory-source-store.ts",
-      "sha256": "8134526911a2c33e3ca0441ce2bc675fe4aedde36d6a41744fad399d837af78b"
+      "sha256": "c90e415c0bf8e269eb2e813b386ac95d61f8c249e0d16b86621c9de19239a3bb"
     },
     {
       "path": "services/relay/src/v2/proof-store.ts",
@@ -408,23 +412,31 @@
     },
     {
       "path": "services/relay/src/v2/source-store.ts",
-      "sha256": "381eef903ac71109770c06726e3e6cb6b9120b2a150f511659be3fb190a7cd69"
+      "sha256": "e58e8f5f4e279983e000244444cc8cc0b2e8bb61649244e90a34d88a4ae9b69e"
     },
     {
       "path": "services/relay/src/v2/source-transfer-crypto.ts",
       "sha256": "25fb3959bcb417eedc3a4dc2b7dd3b17e829e8615c76a7a1246f5664a68f3b27"
     },
     {
+      "path": "services/relay/src/v2/workers-app-store-api-client.ts",
+      "sha256": "b52b83ac5f00fd3a0e94891dbdbf42e392f4556a0793d22054fef64830c6c6f2"
+    },
+    {
       "path": "services/relay/test/apns-client.test.ts",
       "sha256": "0158b14f7efbe33a07456ba15103eb57d247b7273451675a400b57abbaac6dc6"
     },
     {
+      "path": "services/relay/test/app-store-reconciliation.test.ts",
+      "sha256": "841288c3546eb61bbf8f07f46a058a172ed9abedcd6bf9f3a8ac503bbf09deab"
+    },
+    {
       "path": "services/relay/test/apple-store-verifier.test.ts",
-      "sha256": "5fbedfe5b2fd27e3efdfe84b4d2f1857f0e3292749cd40e0374c81573c8b28ed"
+      "sha256": "280f8177cc38b1ce42722bb68a748579f5fc43411013ad9ca9c275a693ccffb3"
     },
     {
       "path": "services/relay/test/index.test.ts",
-      "sha256": "585db44dcb2a552aaf61b6a73a355e69bd390065da4def16bcb3a50f6dd04e93"
+      "sha256": "2f54a916b509b7f39ce364328cf26f324102fc4bf7b694d2111181a1f086b278"
     },
     {
       "path": "services/relay/test/provider-token.test.ts",
@@ -440,7 +452,7 @@
     },
     {
       "path": "services/relay/test/v13-entitlement-store.test.ts",
-      "sha256": "b256de9fad18027f868dad81b53e32af5d3993385058663d7ed83bff5e8e8930"
+      "sha256": "dea0a7a57e37320f081e147907dee6abeeb41e38f8e3af91e4d735a115ba1b8d"
     },
     {
       "path": "services/relay/test/v13-quota-store.test.ts",
@@ -448,7 +460,7 @@
     },
     {
       "path": "services/relay/test/v2-http-source-handler.test.ts",
-      "sha256": "4566a788e6b5cda9fa122643556d918f9c33f461effb76e1cd0be8aadfdf723b"
+      "sha256": "da8625b6bcdeee7150ff6058b7c2e249ae3fb92f6a0df299d5dd45dff1bf6345"
     },
     {
       "path": "services/relay/test/v2-proof-store.test.ts",
@@ -457,6 +469,10 @@
     {
       "path": "services/relay/test/v2-source-store.test.ts",
       "sha256": "4903b661298defb80d5534729f1274bccba6635b1bc2df459f9f97930904cd21"
+    },
+    {
+      "path": "services/relay/test/workers-app-store-api-client.test.ts",
+      "sha256": "eda788a08a4ed8a3260b1129f60b66519592173bae6fdf0d7bf14dc91d47ecaa"
     },
     {
       "path": "services/relay/tsconfig.json",

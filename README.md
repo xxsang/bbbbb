@@ -6,14 +6,26 @@
 
 <p align="center">
   <strong>Know the moment your work needs you.</strong><br>
-  A private iPhone inbox for updates from commands, coding agents, and services.
+  A private iPhone inbox for coding-agent and service updates.
 </p>
 
 ![Demo: a curl request and a wrapped command each deliver a private update to the bbbbb iPhone inbox](assets/readme/bbbbb-demo.svg)
 
-You kicked off a long build. Your coding agent hit a question. A deploy is waiting on your approval. bbbbb (“B-five”) puts that moment on your iPhone—and keeps the update in one private iPhone inbox.
+<p align="center">
+  <a href="https://apps.apple.com/us/app/bbbbb-coding-agent-alerts/id6791204016"><strong>Download bbbbb on the App Store</strong></a>
+  ·
+  <a href="https://bbbbb.app/">Visit bbbbb.app</a>
+</p>
 
-Anything that needs an answer stays in Attention until you resolve it. Everything else stays easy to scan in Activity. HTTP Sources are the default; the optional CLI wraps finite commands.
+You kicked off a build. Your coding agent hit a question. A deploy needs approval. bbbbb (“B-five”) puts that moment on your iPhone—and keeps the update in your inbox.
+
+Notifications disappear; bbbbb is built for follow-through:
+
+- **Attention** holds questions, failures, approvals, and to-dos until resolved.
+- **Activity** keeps other updates easy to scan.
+- **Sources send, but never read** your inbox or run commands.
+
+Connect with a temporary QR or six-digit code, then send through HTTP. The optional CLI wraps finite commands.
 
 ## Quick start
 
@@ -63,9 +75,11 @@ Prompt:
 
 ## Plans and limits
 
-Free includes every core feature: 1,000 updates per Inbox in any rolling 30-day period, with Offline catch-up for the newest 100 encrypted updates for up to seven days.
+Free includes every core feature: 1,000 updates per rolling 30 days and encrypted catch-up for the newest 100 for up to seven days.
 
-Plus is optional. Pay once—no subscription—for 10,000 updates per Inbox in any rolling 30-day period, longer catch-up for the newest 500 encrypted updates for up to 30 days, and on-device JSON and CSV export.
+**Plus: US$4.99, paid once—future features included.** Not a subscription. First 60 days after launch. Core stays free; Plus adds more updates, 30-day catch-up, and export. Regular price: US$6.99 once from October 26, 2026.
+
+Plus raises the rolling limit to 10,000, keeps the newest 500 encrypted updates for up to 30 days, and adds on-device JSON/CSV export.
 
 There is no daily customer quota. Every Inbox has a shared 20-submission-per-minute safety limit, and adding Sources does not add capacity.
 

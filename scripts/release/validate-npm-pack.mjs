@@ -4,7 +4,7 @@ import { CLI_PACKAGE_VERSION, PROTOCOL_PACKAGE_VERSION, RELAY_PACKAGE_VERSION } 
 const specifications = [
   { name: "@bbbbbapp/protocol", version: PROTOCOL_PACKAGE_VERSION, required: ["LICENSE", "README.md", "package.json", "dist/src/index.js", "dist/src/index.d.ts"] },
   { name: "@bbbbbapp/cli", version: CLI_PACKAGE_VERSION, required: ["LICENSE", "README.md", "package.json", "dist/src/index.js", "dist/src/index.d.ts"] },
-  { name: "@bbbbbapp/relay", version: RELAY_PACKAGE_VERSION, required: ["LICENSE", "README.md", "package.json", "src/index.ts", "migrations/0004_v2_http_sources.sql", "migrations/0005_v2_cli_sources.sql", "migrations/0006_v2_source_transfers.sql", "migrations/0007_v13_inbox_usage.sql", "migrations/0008_v13_entitlements.sql", "migrations/0009_v13_app_store_notifications.sql", "migrations/0010_v13_remove_daily_quota.sql", "wrangler.jsonc"] }
+  { name: "@bbbbbapp/relay", version: RELAY_PACKAGE_VERSION, required: ["LICENSE", "README.md", "package.json", "src/index.ts", "migrations/0004_v2_http_sources.sql", "migrations/0005_v2_cli_sources.sql", "migrations/0006_v2_source_transfers.sql", "migrations/0007_v13_inbox_usage.sql", "migrations/0008_v13_entitlements.sql", "migrations/0009_v13_app_store_notifications.sql", "migrations/0010_v13_remove_daily_quota.sql", "migrations/0011_v13_entitlement_operations.sql", "migrations/0012_v13_app_store_reconciliation_state.sql", "wrangler.jsonc"] }
 ];
 
 const paths = process.argv.slice(2);

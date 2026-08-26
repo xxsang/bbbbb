@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import worker, { entitlementConfiguration } from "../src/index.js";
+import worker, { appStoreAPIConfiguration, entitlementConfiguration } from "../src/index.js";
 
 test("configures exact Apple environments and fails closed on ambiguous production input", () => {
   const secret = "S".repeat(32);
@@ -27,6 +27,32 @@ test("configures exact Apple environments and fails closed on ambiguous producti
     { ENTITLEMENT_ID_KEY: secret, APP_STORE_ENVIRONMENT: "production", APP_STORE_ACCEPT_SANDBOX: "false", APP_APPLE_ID: "6791204016" },
     { ENTITLEMENT_ID_KEY: secret, APP_STORE_ENVIRONMENT: "sandbox", APP_STORE_ACCEPT_SANDBOX: "true" },
   ]) assert.equal(entitlementConfiguration(configuration as unknown as Parameters<typeof entitlementConfiguration>[0]), null);
+});
+
+test("configures bounded App Store notification reconciliation credentials or fails closed", () => {
+  const fixtureIssuerId = "123e4567-e89b-42d3-a456-426614174000";
+  const configured = appStoreAPIConfiguration({
+    APP_STORE_API_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nprivate\n-----END PRIVATE KEY-----",
+    APP_STORE_API_KEY_ID: "ABCDEFGHIJ",
+    APP_STORE_API_ISSUER_ID: fixtureIssuerId,
+    APP_STORE_RECONCILIATION_LOOKBACK_HOURS: "168",
+  } as unknown as Parameters<typeof appStoreAPIConfiguration>[0]);
+  assert.equal(configured?.keyId, "ABCDEFGHIJ");
+  assert.equal(configured?.issuerId, fixtureIssuerId);
+  assert.equal(configured?.lookbackHours, 168);
+  assert.equal(appStoreAPIConfiguration({
+    APP_STORE_API_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nprivate\n-----END PRIVATE KEY-----",
+    APP_STORE_API_KEY_ID: "ABCDEFGHIJ",
+    APP_STORE_API_ISSUER_ID: fixtureIssuerId,
+  } as unknown as Parameters<typeof appStoreAPIConfiguration>[0])?.lookbackHours, 4_320);
+  assert.equal(appStoreAPIConfiguration({
+    APP_STORE_API_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nprivate\n-----END PRIVATE KEY-----",
+    APP_STORE_API_KEY_ID: "ABCDEFGHIJ",
+    APP_STORE_API_ISSUER_ID: fixtureIssuerId,
+    APP_STORE_RECONCILIATION_LOOKBACK_HOURS: "4321",
+  } as unknown as Parameters<typeof appStoreAPIConfiguration>[0]), null);
+  assert.equal(appStoreAPIConfiguration({} as Parameters<typeof appStoreAPIConfiguration>[0]), null);
+  assert.equal(appStoreAPIConfiguration({ APP_STORE_API_KEY_ID: "ABCDEFGHIJ" } as unknown as Parameters<typeof appStoreAPIConfiguration>[0]), null);
 });
 
 test("reports relay health and protocol compatibility", async () => {

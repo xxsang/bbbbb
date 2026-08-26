@@ -28,7 +28,7 @@ const patterns = [
   { name: "literal bearer credential", expression: /\bBearer\s+(?!wrong_|test_|example|\$\{)[A-Za-z0-9._~-]{32,}\b/u, binarySafe: false },
   { name: "credential in URL", expression: /https?:\/\/[^\s/:@]+:[^\s/@]{8,}@[^\s/]+/u, binarySafe: false },
   { name: "bbbbb Source URL", expression: /https:\/\/[^\s"'`]+\/v2\/sources\/[A-Za-z0-9_-]{16,128}\/events\?key=[A-Za-z0-9_-]{32,}/u, binarySafe: true },
-  { name: "hard-coded deployment secret", expression: /\b(?:APNS_PRIVATE_KEY|APPLE_SHARED_SECRET|APP_STORE_SHARED_SECRET|BBBBB_SOURCE_URL|CF_API_TOKEN|CLOUDFLARE_API_TOKEN|ENTITLEMENT_ID_KEY|GITHUB_TOKEN)\b\s*[:=]\s*["'][A-Za-z0-9+/_=.-]{20,}["']/u, binarySafe: false },
+  { name: "hard-coded deployment secret", expression: /\b(?:APNS_PRIVATE_KEY|APPLE_SHARED_SECRET|APP_STORE_SHARED_SECRET|APP_STORE_API_PRIVATE_KEY|APP_STORE_API_KEY_ID|APP_STORE_API_ISSUER_ID|BBBBB_SOURCE_URL|BBBBB_ENTITLEMENT_OPERATIONS_KEY|CF_API_TOKEN|CLOUDFLARE_API_TOKEN|ENTITLEMENT_ID_KEY|ENTITLEMENT_OPERATIONS_KEY|GITHUB_TOKEN)\b\s*[:=]\s*["'][A-Za-z0-9+/_=.-]{20,}["']/u, binarySafe: false },
 ];
 
 const findings = [];

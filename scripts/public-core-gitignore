@@ -1,6 +1,0 @@
-node_modules/
-dist/
-.wrangler/
-.artifacts/
-coverage/
-.DS_Store

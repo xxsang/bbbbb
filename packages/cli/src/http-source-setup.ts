@@ -1,6 +1,7 @@
 import { normalizeRelayURL } from "@bbbbbapp/protocol";
 
 import type { StoredHttpSource } from "./http-source-store.js";
+import { boundedSetupJson, cancelAddSourceSession, setupEndpoint, setupRequest, validateCreatedSetupSession } from "./setup-session-client.js";
 
 export interface HttpSourceSetupDependencies {
   readonly fetch: typeof fetch;
@@ -12,54 +13,7 @@ export interface HttpSourceSetupDependencies {
   readonly sleep: (milliseconds: number) => Promise<void>;
 }
 
-const IDENTIFIER = /^[A-Za-z0-9_-]{16,128}$/u;
 const CREDENTIAL = /^[A-Za-z0-9_-]{43}$/u;
-const MAX_RESPONSE_BYTES = 16 * 1_024;
-
-async function request(fetcher: typeof fetch, url: string, init: RequestInit): Promise<Response> {
-  return fetcher(url, { ...init, redirect: "error", signal: init.signal ?? AbortSignal.timeout(15_000) });
-}
-
-async function boundedJson(response: Response): Promise<Record<string, unknown>> {
-  if (!response.body) throw new TypeError("invalid response");
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > MAX_RESPONSE_BYTES) {
-      await reader.cancel();
-      throw new TypeError("invalid response");
-    }
-    chunks.push(value);
-  }
-  const bytes = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  const value: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
-  if (typeof value !== "object" || value === null || Array.isArray(value)) throw new TypeError("invalid response");
-  return value as Record<string, unknown>;
-}
-
-function endpoint(relay: string, path: string): string {
-  return `${relay}${path}`;
-}
-
-async function cancel(relay: string, sessionId: string, setupSecret: string, fetcher: typeof fetch): Promise<void> {
-  try {
-    await request(fetcher, endpoint(relay, `/v2/add-source/sessions/${sessionId}`), {
-      method: "DELETE",
-      headers: { authorization: `Bearer ${setupSecret}` },
-    });
-  } catch {
-    // Expiry remains the cleanup boundary.
-  }
-}
 
 function validateSourceURL(relay: string, value: Record<string, unknown>): string {
   if (value.version !== 2 || value.state !== "completed") throw new TypeError("invalid response");
@@ -105,7 +59,7 @@ export async function httpSourceSetup(
 
   let created: Response;
   try {
-    created = await request(dependencies.fetch, endpoint(relay, "/v2/add-source/sessions"), {
+    created = await setupRequest(dependencies.fetch, setupEndpoint(relay, "/v2/add-source/sessions"), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ sourceName }),
@@ -126,27 +80,10 @@ export async function httpSourceSetup(
   let expiresAt: number;
   let pollAfterMs: number;
   try {
-    const value = await boundedJson(created);
-    sessionId = typeof value.sessionId === "string" ? value.sessionId : "";
-    setupSecret = typeof value.setupSecret === "string" ? value.setupSecret : "";
-    claimURL = typeof value.claimURL === "string" ? value.claimURL : "";
-    code = typeof value.code === "string" ? value.code : "";
-    expiresAt = typeof value.expiresAt === "string" ? Date.parse(value.expiresAt) : Number.NaN;
-    pollAfterMs = typeof value.pollAfterMs === "number" ? value.pollAfterMs : Number.NaN;
-    const claim = new URL(claimURL);
-    if (
-      value.version !== 2 ||
-      !IDENTIFIER.test(sessionId) ||
-      setupSecret.length < 32 ||
-      claim.protocol !== "bbbbb:" ||
-      claim.hostname !== "add-source" ||
-      !/^\d{3}-\d{3}$/u.test(code) ||
-      !Number.isFinite(expiresAt) ||
-      expiresAt <= dependencies.now() ||
-      !Number.isInteger(pollAfterMs) ||
-      pollAfterMs < 250 ||
-      pollAfterMs > 10_000
-    ) throw new TypeError("invalid response");
+    ({ sessionId, setupSecret, claimURL, code, expiresAt, pollAfterMs } = validateCreatedSetupSession(
+      await boundedSetupJson(created),
+      dependencies.now(),
+    ));
   } catch {
     dependencies.stderr("Relay returned an invalid setup response. No credential was stored.\n");
     return 1;
@@ -156,7 +93,7 @@ export async function httpSourceSetup(
   try {
     qr = await dependencies.renderQr(claimURL, input.qrSize);
   } catch {
-    await cancel(relay, sessionId, setupSecret, dependencies.fetch);
+    await cancelAddSourceSession(relay, sessionId, setupSecret, dependencies.fetch);
     dependencies.stderr("Unable to render the setup QR. No credential was stored.\n");
     return 1;
   }
@@ -168,7 +105,7 @@ export async function httpSourceSetup(
     if (dependencies.now() >= expiresAt) break;
     let response: Response;
     try {
-      response = await request(dependencies.fetch, endpoint(relay, `/v2/add-source/sessions/${sessionId}`), {
+      response = await setupRequest(dependencies.fetch, setupEndpoint(relay, `/v2/add-source/sessions/${sessionId}`), {
         headers: { authorization: `Bearer ${setupSecret}` },
       });
     } catch {
@@ -181,7 +118,7 @@ export async function httpSourceSetup(
     }
     let sourceURL: string;
     try {
-      const value = await boundedJson(response);
+      const value = await boundedSetupJson(response);
       if (value.state === "awaiting_approval" || value.state === "approved") continue;
       sourceURL = validateSourceURL(relay, value);
     } catch {
@@ -199,7 +136,7 @@ export async function httpSourceSetup(
     }
 
     try {
-      const test = await request(dependencies.fetch, sourceURL, {
+      const test = await setupRequest(dependencies.fetch, sourceURL, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

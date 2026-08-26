@@ -1,5 +1,5 @@
 import { validateProtocolV2Envelope, validateProtocolV2UsageSnapshot, type ProtocolV2Envelope, type ProtocolV2UsageSnapshot } from "@bbbbbapp/protocol";
-import { V2_DAY_MS, V2_ROLLING_WINDOW_MS, validateV2VerifiedEntitlementClaim, type V2AddSourceSession, type V2EntitlementApplyResult, type V2EntitlementNotificationApplyResult, type V2EventPutResult, type V2Inbox, type V2Source, type V2SourceStore, type V2SourceTransferSession, type V2TierPolicy, type V2VerifiedEntitlementClaim } from "./source-store.js";
+import { V2_DAY_MS, V2_ROLLING_WINDOW_MS, validateV2EntitlementOperation, validateV2VerifiedEntitlementClaim, type V2AddSourceSession, type V2EntitlementApplyResult, type V2EntitlementEnvironment, type V2EntitlementNotificationApplyResult, type V2EntitlementOperation, type V2EntitlementOperationResult, type V2EntitlementReconciliationResult, type V2EventPutResult, type V2Inbox, type V2Source, type V2SourceStore, type V2SourceTransferSession, type V2TierPolicy, type V2VerifiedEntitlementClaim } from "./source-store.js";
 
 export class MemoryV2SourceStore implements V2SourceStore {
   readonly inboxes = new Map<string, V2Inbox>();
@@ -11,7 +11,11 @@ export class MemoryV2SourceStore implements V2SourceStore {
   readonly rates = new Map<string, number>();
   readonly entitlements = new Map<string, V2VerifiedEntitlementClaim>();
   readonly entitlementBindings = new Map<string, string>();
+  readonly entitlementRestoreTargets = new Map<string, { inboxId: string; updatedAt: number }>();
+  readonly entitlementControls = new Map<string, { environment: V2EntitlementOperation["environment"]; reasonCode: string; actorFingerprint: string; changedAt: number; expiresAt: number | null }>();
+  readonly entitlementOperationAudit = new Map<string, V2EntitlementOperation>();
   readonly entitlementNotifications = new Map<string, { notificationType: string; receivedAt: number; stateChangedAt: number | null }>();
+  readonly appStoreReconciliationCheckpoints = new Map<Exclude<V2EntitlementEnvironment, "xcode">, number>();
   failNextCredentialReplacement = false;
 
   async createInbox(inbox: V2Inbox): Promise<boolean> {
@@ -79,6 +83,9 @@ export class MemoryV2SourceStore implements V2SourceStore {
     for (const [notificationUUID, notification] of this.entitlementNotifications) {
       if (notification.receivedAt <= now - 180 * V2_DAY_MS) this.entitlementNotifications.delete(notificationUUID);
     }
+    for (const [inboxId, control] of this.entitlementControls) {
+      if (control.expiresAt !== null && control.expiresAt <= now) this.entitlementControls.delete(inboxId);
+    }
   }
   async getSource(sourceId: string): Promise<V2Source | null> { return structuredClone(this.sources.get(sourceId) ?? null); }
   async listSources(inboxId: string): Promise<V2Source[]> { return [...this.sources.values()].filter((source) => source.inboxId === inboxId).sort((left, right) => left.createdAt - right.createdAt || left.sourceId.localeCompare(right.sourceId)).map((source) => structuredClone(source)); }
@@ -107,6 +114,8 @@ export class MemoryV2SourceStore implements V2SourceStore {
     this.events.delete(inboxId);
     this.usage.delete(inboxId);
     for (const [entitlementId, boundInboxId] of this.entitlementBindings) if (boundInboxId === inboxId) this.entitlementBindings.delete(entitlementId);
+    for (const [entitlementId, target] of this.entitlementRestoreTargets) if (target.inboxId === inboxId) this.entitlementRestoreTargets.delete(entitlementId);
+    this.entitlementControls.delete(inboxId);
     return true;
   }
   async deleteEvents(inboxId: string): Promise<void> { this.events.delete(inboxId); }
@@ -163,7 +172,7 @@ export class MemoryV2SourceStore implements V2SourceStore {
   }
   async applyEntitlement(claim: V2VerifiedEntitlementClaim, inboxId: string | null): Promise<V2EntitlementApplyResult> {
     claim = validateV2VerifiedEntitlementClaim(claim);
-    if (claim.status === "active" && (inboxId === null || !this.inboxes.has(inboxId))) return "inbox_unavailable";
+    if (claim.status === "active" && inboxId !== null && !this.inboxes.has(inboxId)) return "inbox_unavailable";
     const current = this.entitlements.get(claim.entitlementId);
     if (current && (current.productId !== claim.productId || current.environment !== claim.environment)) return "stale";
     if (current && (current.stateChangedAt > claim.stateChangedAt || (current.stateChangedAt === claim.stateChangedAt && current.status === "revoked" && claim.status === "active"))) return "stale";
@@ -171,13 +180,20 @@ export class MemoryV2SourceStore implements V2SourceStore {
     const idempotent = current?.status === claim.status && current.stateChangedAt === claim.stateChangedAt && (claim.status === "revoked" || currentInbox === inboxId);
     this.entitlements.set(claim.entitlementId, structuredClone(claim));
     for (const [entitlementId, boundInboxId] of this.entitlementBindings) {
-      if (entitlementId === claim.entitlementId || (inboxId !== null && boundInboxId === inboxId)) this.entitlementBindings.delete(entitlementId);
+      if (claim.status === "revoked" && entitlementId === claim.entitlementId) this.entitlementBindings.delete(entitlementId);
+      if (claim.status === "active" && inboxId !== null && (entitlementId === claim.entitlementId || boundInboxId === inboxId)) this.entitlementBindings.delete(entitlementId);
     }
-    if (claim.status === "active" && inboxId !== null) this.entitlementBindings.set(claim.entitlementId, inboxId);
+    if (claim.status === "active" && inboxId !== null) {
+      this.entitlementRestoreTargets.set(claim.entitlementId, { inboxId, updatedAt: claim.verifiedAt });
+      this.entitlementBindings.set(claim.entitlementId, inboxId);
+    }
     return idempotent ? "idempotent" : "applied";
   }
   async applyEntitlementNotification(notificationUUID: string, notificationType: string, receivedAt: number, claim: V2VerifiedEntitlementClaim | null): Promise<V2EntitlementNotificationApplyResult> {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(notificationUUID) || notificationType.length < 1 || notificationType.length > 64 || !Number.isSafeInteger(receivedAt) || receivedAt < 0 || (claim !== null && (claim.status !== "revoked" || (notificationType !== "REFUND" && notificationType !== "REVOKE")))) {
+    const validTransition = claim === null ||
+      (claim.status === "revoked" && (notificationType === "REFUND" || notificationType === "REVOKE")) ||
+      (claim.status === "active" && notificationType === "REFUND_REVERSED");
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(notificationUUID) || notificationType.length < 1 || notificationType.length > 64 || !Number.isSafeInteger(receivedAt) || receivedAt < 0 || !validTransition) {
       throw new TypeError("verified entitlement notification is invalid");
     }
     if (this.entitlementNotifications.has(notificationUUID)) return "idempotent";
@@ -185,12 +201,56 @@ export class MemoryV2SourceStore implements V2SourceStore {
       this.entitlementNotifications.set(notificationUUID, { notificationType, receivedAt, stateChangedAt: null });
       return "ignored";
     }
-    const result = await this.applyEntitlement(claim, null);
-    if (result === "inbox_unavailable") throw new Error("revocation cannot require an Inbox");
+    const restoreTarget = claim.status === "active" ? this.entitlementRestoreTargets.get(claim.entitlementId)?.inboxId ?? null : null;
+    const result = await this.applyEntitlement(claim, restoreTarget);
+    if (result === "inbox_unavailable") throw new Error("entitlement notification target is unavailable");
     this.entitlementNotifications.set(notificationUUID, { notificationType, receivedAt, stateChangedAt: claim.stateChangedAt });
     return result;
   }
-  async getEntitlementTier(inboxId: string): Promise<"free" | "plus"> {
+  async reconcileEntitlement(claim: V2VerifiedEntitlementClaim): Promise<V2EntitlementReconciliationResult> {
+    claim = validateV2VerifiedEntitlementClaim(claim);
+    const restoreTarget = claim.status === "active" ? this.entitlementRestoreTargets.get(claim.entitlementId)?.inboxId ?? null : null;
+    const result = await this.applyEntitlement(claim, restoreTarget);
+    if (result === "inbox_unavailable") throw new Error("entitlement reconciliation target is unavailable");
+    return result;
+  }
+  async getAppStoreReconciliationCheckpoint(environment: Exclude<V2EntitlementEnvironment, "xcode">): Promise<number | null> {
+    return this.appStoreReconciliationCheckpoints.get(environment) ?? null;
+  }
+  async advanceAppStoreReconciliationCheckpoint(environment: Exclude<V2EntitlementEnvironment, "xcode">, checkpointAt: number, updatedAt: number): Promise<void> {
+    if (!Number.isSafeInteger(checkpointAt) || checkpointAt < 0 || !Number.isSafeInteger(updatedAt) || updatedAt < checkpointAt) throw new TypeError("App Store reconciliation checkpoint is invalid");
+    const current = this.appStoreReconciliationCheckpoints.get(environment) ?? -1;
+    if (checkpointAt > current) this.appStoreReconciliationCheckpoints.set(environment, checkpointAt);
+  }
+  async applyEntitlementOperation(operationValue: V2EntitlementOperation): Promise<V2EntitlementOperationResult> {
+    const operation = validateV2EntitlementOperation(operationValue);
+    const audited = this.entitlementOperationAudit.get(operation.operationId);
+    if (audited) return JSON.stringify(audited) === JSON.stringify(operation) ? "idempotent" : "idempotency_conflict";
+    const match = [...this.entitlementBindings].find(([entitlementId, boundInboxId]) =>
+      boundInboxId === operation.inboxId && this.entitlements.get(entitlementId)?.environment === operation.environment
+    );
+    const control = this.entitlementControls.get(operation.inboxId);
+    if (operation.action === "suspend") {
+      if (!match) return [...this.entitlementBindings].some(([, boundInboxId]) => boundInboxId === operation.inboxId) ? "environment_mismatch" : "target_unavailable";
+      this.entitlementControls.set(operation.inboxId, { environment: operation.environment, reasonCode: operation.reasonCode, actorFingerprint: operation.actorFingerprint, changedAt: operation.occurredAt, expiresAt: operation.expiresAt });
+    } else if (operation.action === "resume") {
+      if (!control) return "target_unavailable";
+      if (control.environment !== operation.environment) return "environment_mismatch";
+      this.entitlementControls.delete(operation.inboxId);
+    } else {
+      if (operation.environment !== "sandbox") throw new TypeError("sandbox reset requires the Sandbox environment");
+      if (!match) return [...this.entitlementBindings].some(([, boundInboxId]) => boundInboxId === operation.inboxId) ? "environment_mismatch" : "target_unavailable";
+      const [entitlementId] = match;
+      this.entitlementBindings.delete(entitlementId);
+      this.entitlementRestoreTargets.delete(entitlementId);
+      if (control?.environment === "sandbox") this.entitlementControls.delete(operation.inboxId);
+    }
+    this.entitlementOperationAudit.set(operation.operationId, structuredClone(operation));
+    return "applied";
+  }
+  async getEntitlementTier(inboxId: string, now = Date.now()): Promise<"free" | "plus"> {
+    const control = this.entitlementControls.get(inboxId);
+    if (control && (control.expiresAt === null || control.expiresAt > now)) return "free";
     for (const [entitlementId, boundInboxId] of this.entitlementBindings) {
       if (boundInboxId === inboxId && this.entitlements.get(entitlementId)?.status === "active") return "plus";
     }

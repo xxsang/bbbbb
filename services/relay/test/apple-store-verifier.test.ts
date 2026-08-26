@@ -54,7 +54,7 @@ test("official Apple verifier rejects product, type, ownership, token, identifie
   await assert.rejects(verifier.verify("not-a-jws", now), (error) => error instanceof AppleTransactionVerificationError);
 });
 
-test("official Apple verifier accepts only verified refund and revoke notification transitions", async () => {
+test("official Apple verifier accepts verified refund, revoke, and refund-reversal transitions", async () => {
   const verifier = new AppleStoreTransactionVerifier("xcode");
   const revokedTransaction = xcodeJWS({ ...payload, revocationDate: now });
   const notification = {
@@ -78,6 +78,21 @@ test("official Apple verifier accepts only verified refund and revoke notificati
       environment: "xcode",
     },
   });
+  assert.deepEqual(await verifier.verifyNotification(xcodeJWS({
+    ...notification,
+    notificationType: "REFUND_REVERSED",
+    data: { ...notification.data, signedTransactionInfo: xcodeJWS({ ...payload, signedDate: now + 1 }) },
+    signedDate: now + 1,
+  }), now + 1), {
+    notificationUUID: notification.notificationUUID,
+    notificationType: "REFUND_REVERSED",
+    transaction: {
+      originalTransactionId: payload.originalTransactionId,
+      status: "active",
+      stateChangedAt: now + 1,
+      environment: "xcode",
+    },
+  });
   assert.deepEqual(await verifier.verifyNotification(xcodeJWS({ ...notification, notificationType: "ONE_TIME_CHARGE" }), now), {
     notificationUUID: notification.notificationUUID,
     notificationType: "ONE_TIME_CHARGE",
@@ -85,6 +100,10 @@ test("official Apple verifier accepts only verified refund and revoke notificati
   });
   await assert.rejects(
     verifier.verifyNotification(xcodeJWS({ ...notification, data: { ...notification.data, signedTransactionInfo: xcodeJWS(payload) } }), now),
+    (error) => error instanceof AppleTransactionVerificationError && error.kind === "invalid",
+  );
+  await assert.rejects(
+    verifier.verifyNotification(xcodeJWS({ ...notification, notificationType: "REFUND_REVERSED" }), now),
     (error) => error instanceof AppleTransactionVerificationError && error.kind === "invalid",
   );
   for (const invalid of [

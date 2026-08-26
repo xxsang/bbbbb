@@ -1,9 +1,6 @@
 import {
   normalizeHttpV2Input,
-  PLUS_PRODUCT_ID,
   sealProtocolV2Event,
-  validateProtocolV2EntitlementStateResponse,
-  validateProtocolV2EntitlementVerificationRequest,
   validateProtocolV2Envelope,
   type HttpV2Input,
   type ProtocolV2Event,
@@ -12,7 +9,8 @@ import {
   type V2Tier,
 } from "@bbbbbapp/protocol";
 import { BodyTooLargeError, readBoundedBody } from "../http/bounded-body.js";
-import { AppleTransactionVerificationError, type V2VerifiedAppleNotification, type V2VerifiedAppleTransaction } from "./apple-store-verifier.js";
+import type { V2VerifiedAppleNotification, V2VerifiedAppleTransaction } from "./apple-store-verifier.js";
+import { createEntitlementRouteHandler } from "./http-entitlement-routes.js";
 import { v2TierPolicy, type V2AddSourceSession, type V2EntitlementEnvironment, type V2EventPutResult, type V2Inbox, type V2Source, type V2SourceStore, type V2SourceTransferSession } from "./source-store.js";
 import type { DeviceStore } from "./device-store.js";
 
@@ -23,7 +21,6 @@ const MAX_RECEIVER_LABEL_BYTES = 48;
 const EVENT_PAGE_SIZE = 50;
 const IDENTIFIER = /^[A-Za-z0-9_-]{16,128}$/u;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-const COMPACT_JWS = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/u;
 const encoder = new TextEncoder();
 
 class InvalidHttpEventInputError extends Error {}
@@ -41,10 +38,11 @@ export interface V2HttpSourceHandlerDependencies {
   readonly devices?: DeviceStore;
   readonly defer: (promise: Promise<void>) => void;
   readonly log: (entry: Record<string, unknown>) => void;
-  readonly resolveTier?: (inboxId: string) => Promise<V2Tier>;
+  readonly resolveTier?: (inboxId: string, now: number) => Promise<V2Tier>;
   readonly verifyEntitlementTransaction?: (signedTransaction: string, now: number) => Promise<V2VerifiedAppleTransaction>;
   readonly verifyEntitlementNotification?: (signedPayload: string, now: number) => Promise<V2VerifiedAppleNotification>;
   readonly deriveEntitlementId?: (originalTransactionId: string, environment: V2EntitlementEnvironment) => Promise<string>;
+  readonly authorizeEntitlementOperator?: (token: string) => Promise<string | null>;
 }
 
 const json = (body: unknown, status = 200, extra: HeadersInit = {}) => Response.json(body, {
@@ -122,7 +120,7 @@ async function inputBody(request: Request): Promise<HttpV2Input> {
 }
 
 export function createV2HttpSourceHandler(deps: V2HttpSourceHandlerDependencies) {
-  const policyFor = async (inboxId: string) => v2TierPolicy(await (deps.resolveTier?.(inboxId) ?? Promise.resolve("free")));
+  const policyFor = async (inboxId: string) => v2TierPolicy(await (deps.resolveTier?.(inboxId, deps.now()) ?? Promise.resolve("free")));
   const authorizedInbox = async (request: Request, inboxId: string): Promise<V2Inbox | null> => {
     const presented = bearer(request);
     if (!presented) return null;
@@ -180,53 +178,23 @@ export function createV2HttpSourceHandler(deps: V2HttpSourceHandlerDependencies)
     return json({ accepted: true, duplicate: result.kind === "duplicate", eventId: envelope.eventId }, 202);
   };
 
+  const entitlementRoute = createEntitlementRouteHandler({
+    store: deps.store,
+    hash: deps.hash,
+    log: deps.log,
+    authorizeInbox: authorizedInbox,
+    authorizeOperator: deps.authorizeEntitlementOperator,
+    verifyTransaction: deps.verifyEntitlementTransaction,
+    verifyNotification: deps.verifyEntitlementNotification,
+    deriveEntitlementId: deps.deriveEntitlementId,
+  });
+
   return async (request: Request): Promise<Response> => {
     const url = new URL(request.url);
     const now = deps.now();
     try {
-      if (request.method === "POST" && url.pathname === "/v2/app-store/notifications") {
-        if (!deps.verifyEntitlementNotification || !deps.deriveEntitlementId) return json({ error: "verification_unavailable" }, 503);
-        let notification: V2VerifiedAppleNotification;
-        try {
-          if (request.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase() !== "application/json") return json({ error: "invalid_notification" }, 400);
-          const value = JSON.parse(await readBoundedBody(request, 72 * 1_024)) as Record<string, unknown>;
-          if (Object.keys(value).length !== 1 || typeof value.signedPayload !== "string" || encoder.encode(value.signedPayload).byteLength < 16 || encoder.encode(value.signedPayload).byteLength > 64 * 1_024 || !COMPACT_JWS.test(value.signedPayload)) {
-            return json({ error: "invalid_notification" }, 400);
-          }
-          notification = await deps.verifyEntitlementNotification(value.signedPayload, now);
-        } catch (error) {
-          if (error instanceof BodyTooLargeError) throw error;
-          if (error instanceof AppleTransactionVerificationError && error.kind === "retryable") {
-            deps.log({ event: "v2_app_store_notification_failed", kind: "provider" });
-            return json({ error: "verification_unavailable" }, 503);
-          }
-          deps.log({ event: "v2_app_store_notification_failed", kind: "invalid" });
-          return json({ error: "invalid_notification" }, 400);
-        }
-        try {
-          const claim = notification.transaction ? {
-            entitlementId: await deps.deriveEntitlementId(notification.transaction.originalTransactionId, notification.transaction.environment),
-            productId: PLUS_PRODUCT_ID,
-            environment: notification.transaction.environment,
-            status: "revoked" as const,
-            stateChangedAt: notification.transaction.stateChangedAt,
-            verifiedAt: Math.max(now, notification.transaction.stateChangedAt),
-          } : null;
-          const result = await deps.store.applyEntitlementNotification(
-            notification.notificationUUID,
-            notification.notificationType,
-            now,
-            claim,
-          );
-          if (result === "ignored") deps.log({ event: "v2_app_store_notification_ignored" });
-          else deps.log({ event: "v2_app_store_notification_applied", result });
-          return new Response(null, { status: 204, headers: { "cache-control": "no-store" } });
-        } catch {
-          deps.log({ event: "v2_app_store_notification_failed", kind: "storage" });
-          return json({ error: "verification_unavailable" }, 503);
-        }
-      }
-
+      const entitlementResponse = await entitlementRoute(request, url, now);
+      if (entitlementResponse) return entitlementResponse;
       if (request.method === "POST" && url.pathname === "/v2/inboxes") {
         const ipScope = await deps.hash(request.headers.get("cf-connecting-ip") ?? "unknown");
         const windowStart = Math.floor(now / 60_000) * 60_000;
@@ -554,44 +522,6 @@ export function createV2HttpSourceHandler(deps: V2HttpSourceHandlerDependencies)
         return json(await deps.store.getUsage(inboxUsage[1]!, now, await policyFor(inboxUsage[1]!)));
       }
 
-      const inboxEntitlement = /^\/v2\/inboxes\/([A-Za-z0-9_-]{16,128})\/entitlement\/verify$/u.exec(url.pathname);
-      if (inboxEntitlement && request.method === "POST") {
-        const authorized = await authorizedInbox(request, inboxEntitlement[1]!);
-        if (!authorized) return json({ error: "unauthorized" }, 401);
-        if (!deps.verifyEntitlementTransaction || !deps.deriveEntitlementId) return json({ error: "verification_unavailable" }, 503);
-        let transaction: V2VerifiedAppleTransaction;
-        try {
-          const input = validateProtocolV2EntitlementVerificationRequest(JSON.parse(await readBoundedBody(request, 36 * 1_024)));
-          transaction = await deps.verifyEntitlementTransaction(input.signedTransaction, now);
-        } catch (error) {
-          if (error instanceof BodyTooLargeError) throw error;
-          if (error instanceof AppleTransactionVerificationError && error.kind === "retryable") {
-            deps.log({ event: "v2_entitlement_verification_failed", kind: "provider" });
-            return json({ error: "verification_unavailable" }, 503);
-          }
-          deps.log({ event: "v2_entitlement_verification_failed", kind: "invalid" });
-          return json({ error: "invalid_transaction" }, 400);
-        }
-        let result;
-        try {
-          const entitlementId = await deps.deriveEntitlementId(transaction.originalTransactionId, transaction.environment);
-          result = await deps.store.applyEntitlement({
-            entitlementId,
-            productId: PLUS_PRODUCT_ID,
-            environment: transaction.environment,
-            status: transaction.status,
-            stateChangedAt: transaction.stateChangedAt,
-            verifiedAt: Math.max(now, transaction.stateChangedAt),
-          }, transaction.status === "active" ? authorized.inboxId : null);
-        } catch {
-          deps.log({ event: "v2_entitlement_verification_failed", kind: "storage" });
-          return json({ error: "verification_unavailable" }, 503);
-        }
-        if (result === "inbox_unavailable") return json({ error: "inbox_unavailable" }, 404);
-        const state = await deps.store.getEntitlementTier(authorized.inboxId);
-        deps.log({ event: "v2_entitlement_verified", state });
-        return json(validateProtocolV2EntitlementStateResponse({ version: 2, state }));
-      }
       if (inboxEvents && request.method === "DELETE") {
         if (!await authorizedInbox(request, inboxEvents[1]!)) return json({ error: "unauthorized" }, 401);
         await deps.store.deleteEvents(inboxEvents[1]!);
