@@ -12,6 +12,12 @@
 ![Demo: a curl request and a wrapped command each deliver a private update to the bbbbb iPhone inbox](assets/readme/bbbbb-demo.svg)
 
 <p align="center">
+  <a href="https://apps.apple.com/us/app/bbbbb-coding-agent-alerts/id6791204016">
+    <img src="assets/readme/bbbbb-app-icon.png" width="144" alt="Download bbbbb for iPhone on the App Store">
+  </a>
+</p>
+
+<p align="center">
   <a href="https://apps.apple.com/us/app/bbbbb-coding-agent-alerts/id6791204016"><strong>Download bbbbb on the App Store</strong></a>
   ·
   <a href="https://bbbbb.app/">Visit bbbbb.app</a>

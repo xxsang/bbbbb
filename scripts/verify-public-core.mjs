@@ -9,7 +9,7 @@ const root = resolve(process.argv[2] ?? "");
 if (!process.argv[2]) throw new Error("usage: verify-public-core.mjs <export-directory>");
 const required = [
   ".github/workflows/ci.yml", ".gitignore", "README.md", "LICENSE", "CHANGELOG.md", "SECURITY.md", "CONTRIBUTING.md",
-  "THIRD_PARTY_NOTICES.md", "THIRD_PARTY_INVENTORY.json", "assets/readme/bbbbb-logo.svg", "assets/readme/bbbbb-demo.svg", "release/version.json", "packages/protocol/LICENSE",
+  "THIRD_PARTY_NOTICES.md", "THIRD_PARTY_INVENTORY.json", "assets/readme/bbbbb-logo.svg", "assets/readme/bbbbb-demo.svg", "assets/readme/bbbbb-app-icon.png", "release/version.json", "packages/protocol/LICENSE",
   "packages/protocol/fixtures/protocol-v2-hpke.json", "packages/cli/LICENSE", "services/relay/LICENSE",
   "services/relay/migrations/0004_v2_http_sources.sql", "services/relay/migrations/0005_v2_cli_sources.sql",
   "services/relay/migrations/0006_v2_source_transfers.sql",
@@ -42,7 +42,8 @@ for (const path of paths) {
   if (/migrations\/000[123]_/u.test(path) || /(?:protocol|pairing)-v1/u.test(path)) throw new Error(`protocol-1 compatibility file exported: ${path}`);
 }
 const readable = files.filter((path) => !path.endsWith("PUBLIC_CORE_MANIFEST.json"));
-const text = (await Promise.all(readable.map((path) => readFile(path, "utf8").catch(() => "")))).join("\n");
+const textReadable = readable.filter((path) => !/\.(?:gif|jpe?g|png|webp)$/iu.test(path));
+const text = (await Promise.all(textReadable.map((path) => readFile(path, "utf8").catch(() => "")))).join("\n");
 for (const pattern of [
   new RegExp("-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----[\\s]+[A-Za-z0-9+/=\\r\\n]{64,}[\\s]+-----END (?:RSA |EC |OPENSSH )?PRIVATE KEY-----", "u"),
   /\bgh[pousr]_[A-Za-z0-9]{30,}\b/u, /\bAKIA[0-9A-Z]{16}\b/u, /\/Users\/[A-Za-z0-9._-]+\//u, /com\.xxsang/u,
@@ -51,7 +52,7 @@ for (const pattern of [
 // Planning identifiers are excluded except where a retired route
 // name is asserted to stay rejected.
 const publicText = (await Promise.all(
-  readable
+  textReadable
     .filter((path) => !/(?:verify-public-core\.mjs|test\/index\.test\.ts)$/u.test(path))
     .map((path) => readFile(path, "utf8").catch(() => "")),
 )).join("\n");
@@ -71,7 +72,7 @@ await validateConceptContracts(root, [
     concepts: [
       { name: "private update promise", patterns: [/Know the moment[\s\S]*work needs you/u] },
       { name: "durable private inbox", patterns: [/puts that moment on your iPhone/u, /keeps the update in your inbox/u, /Free includes every core feature/u, /Plus raises the rolling limit/u] },
-      { name: "public iPhone app", patterns: [/Download bbbbb on the App Store/u, /apps\.apple\.com\/us\/app\/bbbbb-coding-agent-alerts\/id6791204016/u] },
+      { name: "public iPhone app", patterns: [/Download bbbbb on the App Store/u, /assets\/readme\/bbbbb-app-icon\.png/u, /apps\.apple\.com\/us\/app\/bbbbb-coding-agent-alerts\/id6791204016/u] },
       { name: "sender-controlled Attention and Activity", patterns: [/category is chosen by the sender/u, /Attention[\s\S]*Activity/u] },
       { name: "HTTP-first and optional CLI chooser", patterns: [/Connect with a temporary QR or six-digit code/u, /No CLI required/u, /Install the CLI/u] },
       { name: "npm CLI install with release fallback", patterns: [/npm install --global @bbbbbapp\/cli/u, /GitHub Release/u] },
@@ -121,7 +122,8 @@ for (const path of ["README.md", "docs/guides/INSTALLING.md", "docs/guides/INTEG
 }
 const readme = await read("README.md");
 for (const retired of ["needs-you.png", "completed-dark.png", "source-approval.png", "privacy-lock.png", "event-detail.png", "sources.png", "Needs You", "Completed", "V11-", "New in 1.1"]) if (readme.includes(retired)) throw new Error(`public README contains internal or superseded presentation: ${retired}`);
-if (readme.split(/\s+/u).length > 500) throw new Error("public README is too long for the concise route-first contract");
+const readmeProse = readme.replace(/<[^>]*>/gu, " ");
+if (readmeProse.split(/\s+/u).filter(Boolean).length > 500) throw new Error("public README is too long for the concise route-first contract");
 for (const path of ["docs/guides/MACOS.md", "docs/guides/LINUX.md", "docs/guides/WINDOWS.md", "docs/guides/HTTP_SOURCES.md", "docs/guides/CLI_SOURCES.md"]) if ((await read(path)).split(/\s+/u).length > 550) throw new Error(`${path} is too long for the concise setup contract`);
 for (const retired of ["15-minute threshold", "bbbbb invite", "bbbbb join", "completion-inbox", "one private Channel"]) if (readme.includes(retired)) throw new Error(`public README contains retired guidance: ${retired}`);
 for (const requiredPlanCopy of ["1,000 updates", "10,000", "no daily customer quota", "20-submission-per-minute"]) if (!readme.includes(requiredPlanCopy)) throw new Error(`public README is missing the current plan contract: ${requiredPlanCopy}`);

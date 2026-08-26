@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "222023cfad78ab658ab2d34cea18d2ec4a393070c74dff6337a87698204e6399",
+  "treeSha256": "dc20b6ab2dd785650586d9fb5a979e95e30e4c95f37d2eedca3d7b075bc0d753",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -9,6 +9,10 @@
     {
       "path": ".gitignore",
       "sha256": "b06a99847bb2bdb9520b3f5581d762b0927692284c50e22d3165f5253d155f74"
+    },
+    {
+      "path": "assets/readme/bbbbb-app-icon.png",
+      "sha256": "492c23974b1202b4a36069c19a868add3acb00305fc2cd4ee66e039ee5254db5"
     },
     {
       "path": "assets/readme/bbbbb-demo.svg",
@@ -236,7 +240,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "ddf7af235252ee154c931f9bc26077daf0a8e4e2e9e4eb8d4a01f58c3c65db5b"
+      "sha256": "d5dfbf45479c07174b1511bed784a423ecaf2c94df5a018deff751aa353c8489"
     },
     {
       "path": "release/version.json",
@@ -288,7 +292,7 @@
     },
     {
       "path": "scripts/verify-public-core.mjs",
-      "sha256": "c04d4579babab7d47a19fcfb474e6ce1f2c32260f62d899df0ae98e64ffdf6c9"
+      "sha256": "454b588f5854f8a1b3e3319eb3b33efa81467d5bd1b96e2ad80cba3dd685dcea"
     },
     {
       "path": "SECURITY.md",
