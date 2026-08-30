@@ -11,6 +11,7 @@ export interface HttpSourceSetupDependencies {
   readonly stderr: (text: string) => void;
   readonly now: () => number;
   readonly sleep: (milliseconds: number) => Promise<void>;
+  readonly suppressStepHeading?: boolean;
 }
 
 const CREDENTIAL = /^[A-Za-z0-9_-]{43}$/u;
@@ -97,7 +98,8 @@ export async function httpSourceSetup(
     dependencies.stderr("Unable to render the setup QR. No credential was stored.\n");
     return 1;
   }
-  dependencies.stdout(`Open bbbbb on your iPhone and scan this temporary code.\n${qr}\nUsing this phone? Enter ${code} in Add Source.\nWaiting for approval…\n`);
+  const stepHeading = dependencies.suppressStepHeading ? "" : "Step 2 · Approve its code\n";
+  dependencies.stdout(`${stepHeading}Open bbbbb on your iPhone and scan this temporary QR.\n${qr}\nCannot scan it? Enter the six-digit code ${code} in Add Source.\nWaiting for approval…\n`);
 
   for (let attempt = 0; attempt < 300; attempt += 1) {
     if (dependencies.now() + pollAfterMs >= expiresAt) break;
@@ -113,7 +115,9 @@ export async function httpSourceSetup(
       return 1;
     }
     if (response.status !== 200) {
-      dependencies.stderr("HTTP Source setup could not continue. No credential was stored.\n");
+      dependencies.stderr(response.status === 404
+        ? "Setup was cancelled or expired. Run bbbbb setup-http again. No credential was stored.\n"
+        : "HTTP Source setup could not continue. No credential was stored.\n");
       return 1;
     }
     let sourceURL: string;

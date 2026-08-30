@@ -139,7 +139,8 @@ function parseHttpSetup(args: readonly string[]): {
 export async function executeCli(args: readonly string[], dependencies: CliDependencies = {}): Promise<number> {
   const stdout = dependencies.stdout ?? ((text) => process.stdout.write(text));
   const stderr = dependencies.stderr ?? ((text) => process.stderr.write(text));
-  const profilePath = resolveSourceProfilePath(dependencies.environment ?? process.env, dependencies.homedir ?? homedir);
+  const environment = dependencies.environment ?? process.env;
+  const profilePath = resolveSourceProfilePath(environment, dependencies.homedir ?? homedir);
   const loadProfile = dependencies.loadProfile ?? (() => loadSourceProfile(profilePath, dependencies.fileSystem));
   const sleep = dependencies.relaySleep ?? ((milliseconds: number) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds)));
   const commandDependencies = {
@@ -194,6 +195,7 @@ export async function executeCli(args: readonly string[], dependencies: CliDepen
       stderr,
       now: () => (dependencies.now?.() ?? new Date()).getTime(),
       sleep: dependencies.pairingSleep ?? sleep,
+      suppressStepHeading: environment.BBBBB_SETUP_HTTP_SUPPRESS_STEP_HEADING === "1",
     });
   }
   if (args[0] === "check") return checkV2Command(args.slice(1), commandDependencies);

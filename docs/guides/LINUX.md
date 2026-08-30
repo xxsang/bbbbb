@@ -9,7 +9,7 @@ Choose **HTTP** for coding agents, SSH hosts, scripts, webhooks, and services. I
 3. Approve its temporary QR or six-digit code on iPhone.
 4. Store the collected private link in Secret Service or an owner-only file.
 
-The agent can call that HTTP Source directly. No CLI or helper is required. For a headless server, create a manual **Webhook or service** Source in the app and place its private link through your existing secure channel.
+The agent can call that HTTP Source directly. No CLI or helper is required. For a headless server, choose **Connect an app or automation** in the app to create a manual HTTP Source, then place its private link through your existing secure channel.
 
 ## CLI — optional command wrapper
 
@@ -73,4 +73,4 @@ Inject `BBBBB_SOURCE_URL` only into the agent process. Never paste the exact URL
 
 > Use `BBBBB_SOURCE_URL` without printing or sharing it. Notify me when the task finishes. Send Attention only if I need to act. No progress updates.
 
-No helper or skill is required. For SSH, place a manual **Webhook or service** Source through your existing secret channel, or wrap `ssh` locally with the CLI.
+No helper or skill is required. For SSH, place a manual **Connect an app or automation** Source through your existing secret channel, or wrap `ssh` locally with the CLI.

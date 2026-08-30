@@ -31,6 +31,8 @@ Notifications disappear; bbbbb is built for follow-through:
 
 Connect with a temporary QR or six-digit code, then send through HTTP. The optional CLI wraps finite commands.
 
+On iPhone, coding agents use **Scan QR or enter code**; apps and automations use **Connect an app or automation**.
+
 ## Quick start
 
 ### HTTP — No CLI required

@@ -62,7 +62,7 @@ This reports the SSH process's final exit status. It does not install anything r
 Choose this path when a service already has a webhook field or can make an HTTP request. No CLI installation is needed.
 
 1. In the iPhone app, tap **Sources → Add Source**, name the Source, and wait for its automatic test to pass.
-   Choose **Webhook or service** for this app-created manual path.
+   Choose **Connect an app or automation** for this app-created manual path.
 2. Copy its private Source link directly into one of these destinations:
    - a service's destination or webhook URL field;
    - an OS secret manager or verified git-ignored `.env` file named `BBBBB_SOURCE_URL` on a local computer or SSH server;

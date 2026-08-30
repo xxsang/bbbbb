@@ -36,7 +36,7 @@ If npm is unavailable, use a verified [GitHub Release](https://github.com/xxsang
 
 ## HTTP — store the URL in Keychain
 
-1. Collect the private Source link through Connect, or create a manual **Webhook or service** Source in the app.
+1. Collect the private Source link through Connect, or choose **Connect an app or automation** in the app to create a manual HTTP Source.
 2. Run:
 
    ```sh

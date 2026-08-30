@@ -12,9 +12,9 @@ Use HTTP for coding agents, webhooks, services, automation, scripts, or any tool
 
 No CLI, helper, or phone-to-computer copying is required. The browser keeps the private link in memory only and exposes it only through deliberate Copy or download actions.
 
-## Webhook or service
+## App or automation
 
-1. In bbbbb, choose **Sources → Add Source → Webhook or service**.
+1. In bbbbb, choose **Sources → Add Source → Connect an app or automation**.
 2. Name the Source and wait for **1 · Setup complete**.
 3. Use the eye, **Copy private link**, or **Share private link** to place it in:
    - [macOS Keychain](MACOS.md#http--store-the-url-in-keychain)

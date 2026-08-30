@@ -97,7 +97,7 @@ await validateConceptContracts(root, [
       { name: "secret-safe HTTP Source", patterns: [/BBBBB_SOURCE_URL/u, /without printing or sharing/u] },
       { name: "owner-controlled storage", patterns: [/storage choice/u, /config, database, code/u] },
       { name: "requester-first delivery", patterns: [/Connect/u, /temporary QR or six-digit code/u, /2 · First real update received/u] },
-      { name: "manual webhook fallback", patterns: [/Webhook or service/u, /Copy private link/u, /Share private link/u] },
+      { name: "manual app or automation fallback", patterns: [/Connect an app or automation/u, /Copy private link/u, /Share private link/u] },
       { name: "existing Source access movement", patterns: [/Move sending access/u, /old private link stops working/u] },
     ],
   },
@@ -114,6 +114,16 @@ await validateConceptContracts(root, [
 for (const path of ["README.md", "docs/guides/INSTALLING.md", "docs/guides/CLI_SOURCES.md", "skills/bbbbb-notify/SKILL.md"]) {
   if ((await read(path)).includes("https://bbbbb.app/install.sh")) throw new Error(`${path} contains the retired website installer path`);
 }
+const setupBootstrap = await read("scripts/setup-bootstrap.sh");
+for (const required of [
+  'version=1.3.0',
+  'release_base="https://github.com/xxsang/bbbbb/releases/download/v$version"',
+  'BBBBB_SETUP_HTTP_SUPPRESS_STEP_HEADING=1 "$helper" setup-http --name "$source_name" --store "$store" --qr-size large',
+]) if (!setupBootstrap.includes(required)) throw new Error(`public setup bootstrap contract missing: ${required}`);
+if (setupBootstrap.match(/Step 2 · Approve its code/gu)?.length !== 1) throw new Error("public setup bootstrap must own exactly one Step 2 heading");
+const httpSetupHelper = await read("packages/cli/src/http-source-setup.ts");
+for (const required of ['Step 2 · Approve its code', "suppressStepHeading"]) if (!httpSetupHelper.includes(required)) throw new Error(`public HTTP setup helper is missing its composable heading contract: ${required}`);
+for (const forbidden of ["BBBBB_INSTALL_BASE_URL", "hostname", "--cli", "install_dir="]) if (setupBootstrap.includes(forbidden)) throw new Error(`public setup bootstrap contains retired installer behavior: ${forbidden}`);
 await validateRetiredTerms(root, ["README.md", "docs/guides/API.md", "docs/guides/CLI_SOURCES.md", "docs/guides/HTTP_SOURCES.md", "docs/guides/INTEGRATIONS.md", "skills/bbbbb-notify/SKILL.md"], ["Needs You", "Completed", "Completion Event", "cp -R skills/bbbbb-notify", /\/v1\//u, /bbbbb (?:pair|invite|join)\b/u]);
 for (const path of ["README.md", "docs/guides/INSTALLING.md", "docs/guides/INTEGRATIONS.md", "docs/guides/HTTP_SOURCES.md"]) {
   const value = await read(path);

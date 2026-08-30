@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "933ce059a6604fc7a4b9ac69bcff4fb85e899284085072e669e02f512d773e3b",
+  "treeSha256": "b9db1c2a324c60fad33d8d085a921ee2dc7e949c6975e902744526643cb1291f",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -52,7 +52,7 @@
     },
     {
       "path": "docs/guides/HTTP_SOURCES.md",
-      "sha256": "1675fad2ef0fa068991a9ecc016f2613efc7ac7f07e7aa88c3b6962218674783"
+      "sha256": "69b49b051147ec6af6111041005b5d03cdb03dbabd9a81bbc8df4a0fafa99733"
     },
     {
       "path": "docs/guides/INSTALLING.md",
@@ -60,15 +60,15 @@
     },
     {
       "path": "docs/guides/INTEGRATIONS.md",
-      "sha256": "6b5155455785307e6e5a53d9d7e93d485cee827e8cf7d6fd04496f2404e542ed"
+      "sha256": "86bdb068992fa05d610182975a46939af1935069954c5a2a0a988cdbd5c53f06"
     },
     {
       "path": "docs/guides/LINUX.md",
-      "sha256": "d6548e4278ada2d0dd1382faf2e4c570af3d953871c6bbf001773443c291274b"
+      "sha256": "47de66275c2a59c0298c8ffeb37cf17795e925c285348a29d0432406674c9c03"
     },
     {
       "path": "docs/guides/MACOS.md",
-      "sha256": "1e390dac652bf50d648d26886c94937d8544f79156e3ab2cdfbe86cc168b67e2"
+      "sha256": "65b22c8b9f74d7965e760ef49d5e69f34fcbd9dffb728da5fbd628eb765c1361"
     },
     {
       "path": "docs/guides/SELF_HOSTING.md",
@@ -136,7 +136,7 @@
     },
     {
       "path": "packages/cli/src/http-source-setup.ts",
-      "sha256": "9deb0b660393f37e9aff9dd789867f119855120e806d054c76d2c41f363ee929"
+      "sha256": "4c097ee6677bb56a73330e4a909b721bb394bcd6c19fb8431ae709c00ba225db"
     },
     {
       "path": "packages/cli/src/http-source-store.ts",
@@ -144,7 +144,7 @@
     },
     {
       "path": "packages/cli/src/index.ts",
-      "sha256": "ed10e4c99eb617e2dbc34e96982b68c67e7a4948ac23c118e24e37011d506d8d"
+      "sha256": "85ea97e4d00c60f8dea2bfe58a320e8c3612228a3473d47a10aea7e5f9dc6517"
     },
     {
       "path": "packages/cli/src/setup-session-client.ts",
@@ -160,7 +160,7 @@
     },
     {
       "path": "packages/cli/test/http-setup.test.ts",
-      "sha256": "1cab5b200fe32df696477f24b09de20324504d69e2d34915d0d7aa4082fc521b"
+      "sha256": "5ebb69b83cc898c306d4c9391a16f8a7d347412356cc7dff599d31f0e732607f"
     },
     {
       "path": "packages/cli/test/http-source-store.test.ts",
@@ -240,11 +240,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "7d4bc9083cdaed5cee72176d248a6c9f4e0f1acbc8de510ad793c3f34656c291"
+      "sha256": "b50e46ac041c818f9f83b181bcb9102f5702ce4e5304c88c9797688c03c554b8"
     },
     {
       "path": "release/version.json",
-      "sha256": "65807d408efd476925538b606912fba8e531ca0889fc8a1dcbfca0b59c2d9b97"
+      "sha256": "dd5a225e57ce9a47fbc9a1ed7659d815acabc4893d8782575de54fa8f7ec16bd"
     },
     {
       "path": "scripts/check-public-core.sh",
@@ -291,8 +291,12 @@
       "sha256": "32bf121074ea42ca7ccb59a39f3303b685116012731095db6406780633b8674a"
     },
     {
+      "path": "scripts/setup-bootstrap.sh",
+      "sha256": "0e435b3510f330f55392a70ad888dd3c7caeae2b603c2ce2712e3445af1b1545"
+    },
+    {
       "path": "scripts/verify-public-core.mjs",
-      "sha256": "172705cf9244911e3ebf8530dae7137850414fccc134985477549aed48ccc409"
+      "sha256": "bebc7fdcd212d8db18b6e946e8cbf4189a9f0a5dcc403254be9cdb5298279d55"
     },
     {
       "path": "SECURITY.md",
@@ -500,7 +504,7 @@
     },
     {
       "path": "skills/bbbbb-notify/SKILL.md",
-      "sha256": "23df45ccfca093d1a9eabd5c0f1300b3cb93d0b9bf914809c102a9c77aaef3fe"
+      "sha256": "de08bab6b691e3ed6bec851d8404e082256d217c303de59932eb77d538134d30"
     },
     {
       "path": "THIRD_PARTY_INVENTORY.json",
