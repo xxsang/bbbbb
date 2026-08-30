@@ -31,15 +31,13 @@ Notifications disappear; bbbbb is built for follow-through:
 
 Connect with a temporary QR or six-digit code, then send through HTTP. The optional CLI wraps finite commands.
 
-On iPhone, coding agents use **Connect a coding agent** (recommended; HTTP or CLI); apps and automations use **Connect an app or automation**.
-
 ## Quick start
 
 ### HTTP — No CLI required
 
-1. Open [Connect](https://bbbbb.app/connect/) on the sender.
-2. Name the Source and approve it on iPhone.
-3. Save the collected link as `BBBBB_SOURCE_URL`, then send:
+For a coding agent: `Set up bbbbb at bbbbb.app/setup`. It prepares HTTP, asks for QR or code approval, stores privately, and sends a test. Apps and automations use **Connect an app or automation** on iPhone.
+
+After setup, send directly through the stored `BBBBB_SOURCE_URL`:
 
 ```sh
 curl -X POST "$BBBBB_SOURCE_URL"

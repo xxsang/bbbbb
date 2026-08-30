@@ -5,9 +5,9 @@ Choose **HTTP** for coding agents, SSH hosts, scripts, webhooks, and services. I
 ## Connect a coding agent
 
 1. Open bbbbb on iPhone and create the private inbox.
-2. On the Linux desktop, open `https://bbbbb.app/connect/` and name the Source.
-3. Approve its temporary QR or six-digit code on iPhone.
-4. Store the collected private link in Secret Service or an owner-only file.
+2. Tell the agent: `Set up bbbbb at bbbbb.app/setup`.
+3. Approve its temporary QR code or six-digit fallback on iPhone.
+4. Wait for the accepted setup test. The helper stores the private link in Secret Service or an owner-only file.
 
 The agent can call that HTTP Source directly. No CLI or helper is required. For a headless server, choose **Connect an app or automation** in the app to create a manual HTTP Source, then place its private link through your existing secure channel.
 

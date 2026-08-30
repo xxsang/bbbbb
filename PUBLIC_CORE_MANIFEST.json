@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "14a5acc8a924332c091b41c43a96d1b6673c0251587d74a3d946d5b74e5ee9cf",
+  "treeSha256": "e043fe0b841ce8a52643a999980e00724fd740b566d1b2237fa698569481e580",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -24,7 +24,7 @@
     },
     {
       "path": "CHANGELOG.md",
-      "sha256": "0799dffe2f0acb7326350cc6495375c34e84c29a87213d2eea464bac369423ea"
+      "sha256": "e1da7b495d67f90839aa0dcd4d1dbb394d3744f212d495505baa280e7ea8605e"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -52,23 +52,23 @@
     },
     {
       "path": "docs/guides/HTTP_SOURCES.md",
-      "sha256": "69b49b051147ec6af6111041005b5d03cdb03dbabd9a81bbc8df4a0fafa99733"
+      "sha256": "7ddba4eb9e605e776d3b466ebf3062d1f74b17d8a01ee2380788ec0a36682227"
     },
     {
       "path": "docs/guides/INSTALLING.md",
-      "sha256": "1ef07f7eaa58f329a3f41794dce509a7799f604917ab9cedf9301d4fb38a6fa2"
+      "sha256": "6cfe9a1fc8797f40f6bf28d973efbe45bebe7669a0bf32ce8d56e21720224e8c"
     },
     {
       "path": "docs/guides/INTEGRATIONS.md",
-      "sha256": "86bdb068992fa05d610182975a46939af1935069954c5a2a0a988cdbd5c53f06"
+      "sha256": "4958d215a0be67df466715324224f9bd22a9e43d0b80716ebae0587dd5b0dda4"
     },
     {
       "path": "docs/guides/LINUX.md",
-      "sha256": "47de66275c2a59c0298c8ffeb37cf17795e925c285348a29d0432406674c9c03"
+      "sha256": "1b0cebd9f29ee6965d6ffa24a8690b4d8b98a184b3aa35b694961c6fd9d140ac"
     },
     {
       "path": "docs/guides/MACOS.md",
-      "sha256": "65b22c8b9f74d7965e760ef49d5e69f34fcbd9dffb728da5fbd628eb765c1361"
+      "sha256": "2e4a211b896b503c8e0c5b6027f22551569769fcf92c4d36c7df3ad2ed4f793e"
     },
     {
       "path": "docs/guides/SELF_HOSTING.md",
@@ -80,7 +80,7 @@
     },
     {
       "path": "docs/guides/WINDOWS.md",
-      "sha256": "749ea3bbe6d3aacea4cb4f7cffbcec6ee83372b9a5c50cf51c36a3f4bc0acf5f"
+      "sha256": "6f9c22b39ee2bb8587ccc6625b0d16832132c9fd05d30e22ae1aacf2874ef58f"
     },
     {
       "path": "docs/launch/OPEN_SOURCE.md",
@@ -240,7 +240,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "0839f1d83d3dbc44680669e3510d6b66e534c6937906e5672c082973e1f22479"
+      "sha256": "41e6fef42895dd88c8bdf5e1dce3213217120542cfab7b047f9ebba45e35c1ac"
     },
     {
       "path": "release/version.json",

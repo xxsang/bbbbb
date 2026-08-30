@@ -4,7 +4,7 @@ Use bbbbb when a discrete update matters but continuous monitoring does not. The
 
 ## Coding agents
 
-Open bbbbb on iPhone and create the private inbox. On the agent’s computer, open `https://bbbbb.app/connect/`, name the Source, and approve its temporary QR or six-digit code on iPhone. The computer collects the first private Source link directly.
+Open bbbbb on iPhone and create the private inbox. Tell the coding agent `Set up bbbbb at bbbbb.app/setup`, then approve its temporary QR code or six-digit fallback on iPhone. The temporary helper chooses a generic Source label, stores the private Source link outside the conversation, and sends an accepted setup test before offering the optional CLI or another Source.
 
 Store the collected link as `BBBBB_SOURCE_URL` in the environment or secret-injection mechanism used to launch the agent.
 

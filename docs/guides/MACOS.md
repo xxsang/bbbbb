@@ -5,9 +5,9 @@ Choose **HTTP** for coding agents, scripts, webhooks, and services. Install the 
 ## Connect a coding agent
 
 1. Open bbbbb on iPhone and create the private inbox.
-2. On this Mac, open `https://bbbbb.app/connect/` and name the Source.
-3. Approve its temporary QR or six-digit code on iPhone.
-4. Store the collected private link in Keychain below.
+2. Tell the agent: `Set up bbbbb at bbbbb.app/setup`.
+3. Approve its temporary QR code or six-digit fallback on iPhone.
+4. Wait for the accepted setup test. The helper stores the private link in Keychain.
 
 The agent can call that HTTP Source directly. No CLI or helper is required.
 
@@ -36,7 +36,7 @@ If npm is unavailable, use a verified [GitHub Release](https://github.com/xxsang
 
 ## HTTP — store the URL in Keychain
 
-1. Collect the private Source link through Connect, or choose **Connect an app or automation** in the app to create a manual HTTP Source.
+1. Use the coding-agent setup above, or choose **Connect an app or automation** in the app to create a manual HTTP Source.
 2. Run:
 
    ```sh

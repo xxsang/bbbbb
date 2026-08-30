@@ -4,7 +4,7 @@ Start with the iPhone app, then choose one guide:
 
 | You are using | Start here |
 | --- | --- |
-| Coding agent or computer | [HTTP Source](HTTP_SOURCES.md#coding-agent-or-computer) |
+| Coding agent | [HTTP Source](HTTP_SOURCES.md#coding-agent) |
 | Webhook, service, or script | [HTTP Source](HTTP_SOURCES.md) |
 | `bbbbb run` command wrapper | [CLI Source](CLI_SOURCES.md) |
 | macOS | [macOS setup](MACOS.md) |

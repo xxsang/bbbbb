@@ -2,15 +2,14 @@
 
 Use HTTP for coding agents, webhooks, services, automation, scripts, or any tool that can make one HTTPS request. It is the default setup path and requires no permanent CLI.
 
-## Coding agent or computer
+## Coding agent
 
 1. Open bbbbb on iPhone and create the private inbox.
-2. On the sender, open `https://bbbbb.app/connect/` and name the Source.
-3. Approve its temporary QR or six-digit code on iPhone.
-4. Give the collected private link to the sender as `BBBBB_SOURCE_URL`.
-5. Send one real update, then confirm **2 · First real update received** in the app.
+2. Tell the agent: `Set up bbbbb at bbbbb.app/setup`.
+3. Approve its temporary QR code or six-digit fallback on iPhone.
+4. Wait for the accepted setup test. The temporary helper chooses a generic Source label and stores the private link in supported private storage.
 
-No CLI, helper, or phone-to-computer copying is required. The browser keeps the private link in memory only and exposes it only through deliberate Copy or download actions.
+No permanent CLI or phone-to-computer credential copying is required. The optional CLI is offered only after the HTTP setup test succeeds.
 
 ## App or automation
 
@@ -49,10 +48,10 @@ Categories are `activity` and `attention`; labels are user-defined.
 
 Keep the credential outside the conversation:
 
-1. Use **Connect** on the sender so the private link arrives on that computer.
-2. Store it as `BBBBB_SOURCE_URL` outside the conversation.
-3. Never paste the exact link into the prompt.
-4. Copy this prompt:
+1. Tell the agent `Set up bbbbb at bbbbb.app/setup` and approve its temporary code on iPhone.
+2. The helper stores `BBBBB_SOURCE_URL` outside the conversation and sends a setup test.
+3. Never paste the exact link into the prompt or logs.
+4. For later tasks, copy this prompt:
 
 > Use `BBBBB_SOURCE_URL` without printing or sharing it. Notify me when the task finishes. Send Attention only if I need to act. No progress updates.
 

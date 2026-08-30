@@ -4,7 +4,7 @@ The standalone CLI is not currently distributed for Windows. Use an **HTTP Sourc
 
 ## 1. Connect the Source
 
-Open `https://bbbbb.app/connect/` on this Windows computer, name the Source, and approve its temporary code in bbbbb on iPhone. Then store the collected private link with DPAPI.
+For a coding agent, tell it `Set up bbbbb at bbbbb.app/setup` and approve its temporary QR code or six-digit fallback in bbbbb on iPhone. For a script or service, choose **Connect an app or automation** in the app, then store the private link with DPAPI.
 
 ## 2. Store it with Windows DPAPI
 
