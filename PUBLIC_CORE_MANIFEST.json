@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "b9db1c2a324c60fad33d8d085a921ee2dc7e949c6975e902744526643cb1291f",
+  "treeSha256": "14a5acc8a924332c091b41c43a96d1b6673c0251587d74a3d946d5b74e5ee9cf",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -240,11 +240,11 @@
     },
     {
       "path": "README.md",
-      "sha256": "b50e46ac041c818f9f83b181bcb9102f5702ce4e5304c88c9797688c03c554b8"
+      "sha256": "0839f1d83d3dbc44680669e3510d6b66e534c6937906e5672c082973e1f22479"
     },
     {
       "path": "release/version.json",
-      "sha256": "dd5a225e57ce9a47fbc9a1ed7659d815acabc4893d8782575de54fa8f7ec16bd"
+      "sha256": "7211e47cec8d1d72af79c25e610a05e0c08f48d2885527f3527afd853435b642"
     },
     {
       "path": "scripts/check-public-core.sh",
