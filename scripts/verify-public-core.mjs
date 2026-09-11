@@ -70,15 +70,15 @@ await validateConceptContracts(root, [
   {
     path: "README.md",
     concepts: [
-      { name: "private update promise", patterns: [/Know the moment[\s\S]*work needs you/u] },
+      { name: "private update promise", patterns: [/Get notified when your work needs attention/u] },
       { name: "durable private inbox", patterns: [/puts that moment on your iPhone/u, /keeps the update in your inbox/u, /Free includes every core feature/u, /Plus raises the rolling limit/u] },
       { name: "public iPhone app", patterns: [/Download on the App Store/u, /assets\/readme\/download-on-the-app-store\.svg/u, /apps\.apple\.com\/us\/app\/bbbbb-coding-agent-alerts\/id6791204016/u] },
       { name: "Apple trademark credit", patterns: [/Apple, the Apple logo, and App Store are trademarks of Apple Inc\./u] },
       { name: "sender-controlled Attention and Activity", patterns: [/category is chosen by the sender/u, /Attention[\s\S]*Activity/u] },
       { name: "HTTP-first and optional CLI chooser", patterns: [/Connect with a temporary QR or six-digit code/u, /No CLI required/u, /Install the CLI/u] },
       { name: "npm CLI install with release fallback", patterns: [/npm install --global @bbbbbapp\/cli/u, /GitHub Release/u] },
-      { name: "honest protection boundary", patterns: [/CLI events leave encrypted/u, /HTTP events are sealed before storage/u] },
-      { name: "recoverable privacy boundary", patterns: [/newest 100/u, /seven days/u, /newest 500/u, /30 days/u, /Plus/u, /missed banner/u] },
+      { name: "honest protection boundary", patterns: [/CLI events are encrypted before sending/u, /HTTP events are encrypted before storage/u] },
+      { name: "recoverable privacy boundary", patterns: [/newest 100/u, /seven days/u, /newest 500/u, /30 days/u, /Plus/u, /check updates after missing a notification/u] },
       { name: "pasteable agent notification prompt", patterns: [/Notify me when it finishes/u, /Attention only if I need to act/u, /No progress updates/u] },
       { name: "routed setup and operations docs", patterns: [/docs\/guides\/INSTALLING\.md/u, /docs\/launch\/OPERATIONS\.md/u] },
     ],

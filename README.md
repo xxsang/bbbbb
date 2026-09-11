@@ -1,11 +1,13 @@
 # bbbbb
 
+[English](README.md) | [简体中文](README.zh-CN.md) | [Español](README.es.md) | [日本語](README.ja.md) | [Deutsch](README.de.md) | [Français](README.fr.md) | [Português (Brasil)](README.pt-BR.md)
+
 <p align="center">
   <img src="assets/readme/bbbbb-logo.svg" width="128" alt="bbbbb logo">
 </p>
 
 <p align="center">
-  <strong>Know the moment your work needs you.</strong><br>
+  <strong>Get notified when your work needs attention.</strong><br>
   A private iPhone inbox for coding-agent and service updates.
 </p>
 
@@ -21,29 +23,33 @@
   <a href="https://bbbbb.app/">Visit bbbbb.app</a>
 </p>
 
-You kicked off a build. Your coding agent hit a question. A deploy needs approval. bbbbb (“B-five”) puts that moment on your iPhone—and keeps the update in your inbox.
+bbbbb (“B-five”) keeps build results, agent questions, and approvals in your iPhone inbox.
 
-Notifications disappear; bbbbb is built for follow-through:
+Catch up after missed notifications:
 
-- **Attention** holds questions, failures, approvals, and to-dos until resolved.
-- **Activity** keeps other updates easy to scan.
-- **Sources send, but never read** your inbox or run commands.
+- Attention holds questions, failures, approvals, and to-dos until resolved.
+- Activity shows other updates.
+- Sources send, but never read your inbox or run commands.
 
-Connect with a temporary QR or six-digit code, then send through HTTP. The optional CLI wraps finite commands.
+Scan a temporary QR code or enter a six-digit code, approve on iPhone, then send through HTTP. The optional CLI runs commands and reports results.
+
+## Coming in v1.5
+
+Upcoming: seven app languages, safer history saves and CSV exports. All seven website languages are live. The app update is not yet on the App Store.
 
 ## Quick start
 
-### HTTP — No CLI required
+### HTTP, no CLI required
 
-For a coding agent: `Set up bbbbb at bbbbb.app/setup`. It prepares HTTP, asks for QR or code approval, stores privately, and sends a test. Apps and automations use **Connect an app or automation** on iPhone.
+For a coding agent: `Set up bbbbb at bbbbb.app/setup`. It prepares an HTTP Source, asks you to approve the connection on iPhone, saves the private link, and sends a test message. Apps and automations use **Connect an app or automation** on iPhone.
 
-After setup, send directly through the stored `BBBBB_SOURCE_URL`:
+Send through your stored `BBBBB_SOURCE_URL`:
 
 ```sh
 curl -X POST "$BBBBB_SOURCE_URL"
 ```
 
-The category is chosen by the sender: Attention may need a response; everything else is Activity. Keep the Source URL out of prompts and logs.
+Senders choose the category: Attention may need a response; otherwise use Activity. Keep Source URLs out of prompts and logs.
 
 ### Optional CLI
 
@@ -79,9 +85,9 @@ Prompt:
 
 ## Plans and limits
 
-Free includes every core feature: 1,000 updates per rolling 30 days and encrypted catch-up for the newest 100 for up to seven days.
+Free includes every core feature: 1,000 updates in any 30-day period. The newest 100 stay encrypted for up to seven days for offline catch-up.
 
-**Plus: US$4.99, paid once—future features included.** Not a subscription. First 60 days after launch. Core stays free; Plus adds more updates, 30-day catch-up, and export. Regular price: US$6.99 once from October 26, 2026.
+Plus costs US$4.99 once during the first 60 days after launch, including future features. There is no subscription. Core stays free; Plus adds more updates, 30-day catch-up, and export. The regular price is US$6.99 once from October 26, 2026.
 
 Plus raises the rolling limit to 10,000, keeps the newest 500 encrypted updates for up to 30 days, and adds on-device JSON/CSV export.
 
@@ -89,7 +95,7 @@ There is no daily customer quota. Every Inbox has a shared 20-submission-per-min
 
 ## Privacy
 
-CLI events leave encrypted; HTTP events are sealed before storage. Free keeps the newest 100 encrypted events for up to seven days; Plus keeps the newest 500 for up to 30 days. Sources can send but cannot read history, and a missed banner does not mean a missed update.
+CLI events are encrypted before sending; HTTP events are encrypted before storage. Sources can send but cannot read history, and you can check updates after missing a notification.
 
 The developer core is licensed under the [Apache License 2.0](LICENSE). The iPhone app is separate.
 

@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "e043fe0b841ce8a52643a999980e00724fd740b566d1b2237fa698569481e580",
+  "treeSha256": "e5f251961d8a1b43b2842bde9e8ee56e6e9d566b7f75eee1e054fc1293360422",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -239,8 +239,32 @@
       "sha256": "d784b80a369e280520c40fe6d7d8e14a5793b456c1e54ed47f3ff555a0d61a0a"
     },
     {
+      "path": "README.de.md",
+      "sha256": "8c86c4b0a24bec0074055db76a35fe98bd5d1135ddfdfecec1605297581f4748"
+    },
+    {
+      "path": "README.es.md",
+      "sha256": "c1f7cb441129e14f5ac01eda020ca919a3dd2e418d8a3cc29d11740f8cf30b7c"
+    },
+    {
+      "path": "README.fr.md",
+      "sha256": "095af1cd87055be6aaf3f611c1a349be3f773e69cd72fb90263fd6dfca799875"
+    },
+    {
+      "path": "README.ja.md",
+      "sha256": "545bd48b16225ebd88bd572af14f7c6e8b396eb68c28f8ae2edbbfa5d5a16ec3"
+    },
+    {
       "path": "README.md",
-      "sha256": "41e6fef42895dd88c8bdf5e1dce3213217120542cfab7b047f9ebba45e35c1ac"
+      "sha256": "8cacc428139685d83be7573291a030a91a1bdac58d4240fbc91714938d5f57be"
+    },
+    {
+      "path": "README.pt-BR.md",
+      "sha256": "5bf310c4213bfc3f859b6362c8db3f89b83a2a345e99b93258c49a9a34d9acb7"
+    },
+    {
+      "path": "README.zh-CN.md",
+      "sha256": "0b12b0218132547a13c69ea18c1b5d5b4aa2d5f245ddfa4727dece3116bea06c"
     },
     {
       "path": "release/version.json",
@@ -296,7 +320,7 @@
     },
     {
       "path": "scripts/verify-public-core.mjs",
-      "sha256": "bebc7fdcd212d8db18b6e946e8cbf4189a9f0a5dcc403254be9cdb5298279d55"
+      "sha256": "2adb9f7a6b4123a7e3a5604cf98dc3a3003fe8177c9c2d84b02dc85e8dd7c6b7"
     },
     {
       "path": "SECURITY.md",
