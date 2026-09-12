@@ -70,7 +70,7 @@ await validateConceptContracts(root, [
   {
     path: "README.md",
     concepts: [
-      { name: "private update promise", patterns: [/Get notified when your work needs attention/u] },
+      { name: "private update promise", patterns: [/Get notified on your iPhone when your coding agent finishes or needs your help/u, /stays in your private inbox until you resolve it/u] },
       { name: "durable private inbox", patterns: [/puts that moment on your iPhone/u, /keeps the update in your inbox/u, /Free includes every core feature/u, /Plus raises the rolling limit/u] },
       { name: "public iPhone app", patterns: [/Download on the App Store/u, /assets\/readme\/download-on-the-app-store\.svg/u, /apps\.apple\.com\/us\/app\/bbbbb-coding-agent-alerts\/id6791204016/u] },
       { name: "Apple trademark credit", patterns: [/Apple, the Apple logo, and App Store are trademarks of Apple Inc\./u] },

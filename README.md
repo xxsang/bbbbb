@@ -7,8 +7,8 @@
 </p>
 
 <p align="center">
-  <strong>Get notified when your work needs attention.</strong><br>
-  A private iPhone inbox for coding-agent and service updates.
+  <strong>Get notified on your iPhone when your coding agent finishes or needs your help.</strong><br>
+  Anything that needs a response stays in your private inbox until you resolve it.
 </p>
 
 ![Demo: a curl request and a wrapped command each deliver a private update to the bbbbb iPhone inbox](assets/readme/bbbbb-demo.svg)
@@ -23,7 +23,13 @@
   <a href="https://bbbbb.app/">Visit bbbbb.app</a>
 </p>
 
-bbbbb (“B-five”) keeps build results, agent questions, and approvals in your iPhone inbox.
+bbbbb (“B-five”) also accepts updates from builds, scripts, and web services.
+
+To connect your coding agent, tell it:
+
+> Set up bbbbb at bbbbb.app/setup.
+
+Then approve the connection on your iPhone with a temporary QR code or six-digit code.
 
 Catch up after missed notifications:
 
@@ -31,17 +37,15 @@ Catch up after missed notifications:
 - Activity shows other updates.
 - Sources send, but never read your inbox or run commands.
 
-Scan a temporary QR code or enter a six-digit code, approve on iPhone, then send through HTTP. The optional CLI runs commands and reports results.
+## New in v1.5
 
-## Coming in v1.5
-
-Upcoming: seven app languages, safer history saves and CSV exports. All seven website languages are live. The app update is not yet on the App Store.
+The app now supports seven languages, with improvements to history saves and CSV exports. The website is available in the same seven languages.
 
 ## Quick start
 
 ### HTTP, no CLI required
 
-For a coding agent: `Set up bbbbb at bbbbb.app/setup`. It prepares an HTTP Source, asks you to approve the connection on iPhone, saves the private link, and sends a test message. Apps and automations use **Connect an app or automation** on iPhone.
+The agent setup above saves an HTTP Source and sends a test message. For other tools, use **Connect an app or automation** on iPhone.
 
 Send through your stored `BBBBB_SOURCE_URL`:
 

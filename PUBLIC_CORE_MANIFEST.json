@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "treeSha256": "e5f251961d8a1b43b2842bde9e8ee56e6e9d566b7f75eee1e054fc1293360422",
+  "treeSha256": "5919f054a82c47c8493e22c1c0273218bf3c14039c9c5960b31f338ea67b23e7",
   "files": [
     {
       "path": ".github/workflows/ci.yml",
@@ -112,11 +112,11 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "3672a546d9f63e81cdf0d157e2fffdc784286894912a552a9e22b5ecb901904e"
+      "sha256": "39c89fb6be6d97eb11cdd7bd2bfc3a3b3d1d801b16d6ee273b3bb7d105d14c3d"
     },
     {
       "path": "package.json",
-      "sha256": "b96da2f7422a006ee72ea3fb6e547c6c91b366f981ac3b2a9c9a4ea12798df15"
+      "sha256": "d4d70fe048ac2a374c0c6f317dd2d113b798cb223a1afc5fc3813adf34c79a8f"
     },
     {
       "path": "packages/cli/LICENSE",
@@ -256,7 +256,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "8cacc428139685d83be7573291a030a91a1bdac58d4240fbc91714938d5f57be"
+      "sha256": "120acafe9738c444feddf8fc60ee5b973f1f6fe511f9de714af403da09d62478"
     },
     {
       "path": "README.pt-BR.md",
@@ -320,7 +320,7 @@
     },
     {
       "path": "scripts/verify-public-core.mjs",
-      "sha256": "2adb9f7a6b4123a7e3a5604cf98dc3a3003fe8177c9c2d84b02dc85e8dd7c6b7"
+      "sha256": "ed179698052196f277efb903e93725498d12732f22f714a68615733818fa52a3"
     },
     {
       "path": "SECURITY.md",
